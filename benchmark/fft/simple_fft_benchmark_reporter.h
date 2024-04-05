@@ -1,6 +1,7 @@
 #ifndef BENCHMARK_FFT_SIMPLE_FFT_BENCHMARK_REPORTER_H_
 #define BENCHMARK_FFT_SIMPLE_FFT_BENCHMARK_REPORTER_H_
 
+#include <cstdint>
 #include <vector>
 
 #include "benchmark/simple_benchmark_reporter.h"

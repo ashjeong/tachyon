@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 
+#include <cstdint>
 #include <ostream>
 #include <string>
 #include <string_view>

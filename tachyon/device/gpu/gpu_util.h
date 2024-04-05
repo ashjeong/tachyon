@@ -5,6 +5,7 @@
 #ifndef TACHYON_DEVICE_GPU_GPU_UTIL_H_
 #define TACHYON_DEVICE_GPU_GPU_UTIL_H_
 
+#include <cstdint>
 #include <string>
 
 #include "tachyon/build/build_config.h"
