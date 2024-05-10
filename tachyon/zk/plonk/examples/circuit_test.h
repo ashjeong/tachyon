@@ -14,17 +14,18 @@ namespace tachyon::zk::plonk::halo2 {
 
 template <typename PCS, typename LS>
 class CircuitTest : public ProverTest<PCS, LS> {
+ public:
+  struct Point {
+    std::string_view x;
+    std::string_view y;
+  };
+
  protected:
   using F = typename PCS::Field;
   using Commitment = typename PCS::Commitment;
   using Poly = typename PCS::Poly;
   using Evals = typename PCS::Evals;
   using RationalEvals = typename PCS::RationalEvals;
-
-  struct Point {
-    std::string_view x;
-    std::string_view y;
-  };
 
   static Commitment CreateCommitment(const Point& point) {
     using BaseField = typename Commitment::BaseField;

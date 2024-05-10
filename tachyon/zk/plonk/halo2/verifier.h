@@ -46,14 +46,6 @@ class Verifier : public VerifierBase<PCS> {
     return VerifyProofForTesting(vkey, instance_columns_vec, nullptr, nullptr);
   }
 
- private:
-  FRIEND_TEST(SimpleCircuitTest, Verify);
-  FRIEND_TEST(SimpleV1CircuitTest, Verify);
-  FRIEND_TEST(SimpleLookupCircuitTest, Verify);
-  FRIEND_TEST(SimpleLookupV1CircuitTest, Verify);
-  template <typename>
-  FRIEND_TEST(ShuffleCircuitTest, Verify);
-
   bool VerifyProofForTesting(
       const VerifyingKey<F, Commitment>& vkey,
       const std::vector<std::vector<Evals>>& instance_columns_vec,
@@ -112,6 +104,14 @@ class Verifier : public VerifierBase<PCS> {
 
     return DoVerify(instance_commitments_vec, vkey, proof, expected_h_eval_out);
   }
+
+ private:
+  FRIEND_TEST(SimpleCircuitTest, Verify);
+  FRIEND_TEST(SimpleV1CircuitTest, Verify);
+  FRIEND_TEST(SimpleLookupCircuitTest, Verify);
+  FRIEND_TEST(SimpleLookupV1CircuitTest, Verify);
+  template <typename>
+  FRIEND_TEST(ShuffleCircuitTest, Verify);
 
   void ComputeAuxValues(const ConstraintSystem<F>& constraint_system,
                         Proof<F, Commitment>& proof) const {
