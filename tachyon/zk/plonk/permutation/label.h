@@ -22,7 +22,9 @@ struct TACHYON_EXPORT Label {
   size_t col = 0;
   RowIndex row = 0;
 
-  Label(size_t col, RowIndex row) : col(col), row(row) {}
+  constexpr Label() = default;
+
+  constexpr Label(size_t col, RowIndex row) : col(col), row(row) {}
 
   bool operator==(const Label& other) const {
     return col == other.col && row == other.row;
