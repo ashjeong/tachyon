@@ -106,9 +106,6 @@ class Verifier : public VerifierBase<PCS> {
   }
 
  private:
-  template <typename>
-  FRIEND_TEST(ShuffleCircuitTest, Verify);
-
   void ComputeAuxValues(const ConstraintSystem<F>& constraint_system,
                         Proof<F, Commitment>& proof) const {
     RowIndex blinding_factors = constraint_system.ComputeBlindingFactors();

@@ -9,6 +9,8 @@
 #include "tachyon/zk/lookup/halo2/scheme.h"
 #include "tachyon/zk/plonk/examples/circuit_test.h"
 #include "tachyon/zk/plonk/examples/circuit_test_type_traits.h"
+#include "tachyon/zk/plonk/examples/shuffle_circuit.h"
+#include "tachyon/zk/plonk/examples/shuffle_circuit_test_data.h"
 #include "tachyon/zk/plonk/examples/simple_circuit.h"
 #include "tachyon/zk/plonk/examples/simple_circuit_test_data.h"
 #include "tachyon/zk/plonk/examples/simple_lookup_circuit.h"
@@ -37,6 +39,8 @@ using Halo2LS =
                           typename SHPlonk::Commitment>;
 
 const size_t kBits = 3;
+const size_t kW = 2;
+const size_t kH = 8;
 
 template <typename _Circuit, typename _PCS, typename _LS>
 struct TestingArguments {
@@ -60,8 +64,14 @@ struct ExampleTestDataSelector {
       std::conditional_t<
         std::is_same_v<Circuit, SimpleLookupCircuit<F, kBits, SimpleFloorPlanner>>,
           SimpleLookupTestData<SimpleLookupCircuit<F, kBits, SimpleFloorPlanner>, PCS, LS>,
-          SimpleLookupTestData<SimpleLookupCircuit<F, kBits, V1FloorPlanner>, PCS, LS>
-      >>>;
+      std::conditional_t<
+        std::is_same_v<Circuit, SimpleLookupCircuit<F, kBits, V1FloorPlanner>>,
+          SimpleLookupTestData<SimpleLookupCircuit<F, kBits, V1FloorPlanner>, PCS, LS>,
+      std::conditional_t<
+        std::is_same_v<Circuit, ShuffleCircuit<F, kW, kH, SimpleFloorPlanner>>,
+          ShuffleTestData<ShuffleCircuit<F, kW, kH, SimpleFloorPlanner>, PCS, LS>,
+          ShuffleTestData<ShuffleCircuit<F, kW, kH, V1FloorPlanner>, PCS, LS>
+      >>>>>;
   // clang-format on
 };
 template <typename TestingType>
@@ -80,7 +90,15 @@ using TestingTypes = testing::Types<
         SimpleLookupCircuit<SHPlonk::Field, kBits, SimpleFloorPlanner>, SHPlonk,
         Halo2LS>,
     TestingArguments<SimpleLookupCircuit<SHPlonk::Field, kBits, V1FloorPlanner>,
-                     SHPlonk, Halo2LS>>;
+                     SHPlonk, Halo2LS>,
+    TestingArguments<ShuffleCircuit<SHPlonk::Field, kW, kH, SimpleFloorPlanner>,
+                     SHPlonk, Halo2LS>,
+    TestingArguments<ShuffleCircuit<SHPlonk::Field, kW, kH, V1FloorPlanner>,
+                     SHPlonk, Halo2LS>,
+    TestingArguments<ShuffleCircuit<GWC::Field, kW, kH, SimpleFloorPlanner>,
+                     GWC, Halo2LS>,
+    TestingArguments<ShuffleCircuit<GWC::Field, kW, kH, V1FloorPlanner>, GWC,
+                     Halo2LS>>;
 }  // namespace
 
 TYPED_TEST_SUITE(ExampleCircuitTest, TestingTypes);
@@ -182,6 +200,16 @@ TYPED_TEST(ExampleCircuitTest, LoadVerifyingKey) {
   using ExampleTestData =
       typename ExampleTestDataSelector<Circuit, PCS, LS>::Type;
 
+  // TODO(ashjeong): Implement test for |ShuffleCircuit| GWC version
+  if constexpr ((std::is_same_v<
+                     Circuit, ShuffleCircuit<F, kW, kH, SimpleFloorPlanner>> ||
+                 std::is_same_v<
+                     Circuit,
+                     ShuffleCircuit<F, kW, kH, V1FloorPlanner>>)&&IsGWC<PCS>) {
+    GTEST_SKIP() << "LoadVerifyingKey test skipped for ShuffleCircuit with GWC";
+    return;
+  }
+
   CHECK(this->prover_->pcs().UnsafeSetup(ExampleTestData::kN, F(2)));
   this->prover_->set_domain(Domain::Create(ExampleTestData::kN));
 
@@ -214,6 +242,16 @@ TYPED_TEST(ExampleCircuitTest, LoadProvingKey) {
   using Commitment = typename PCS::Commitment;
   using ExampleTestData =
       typename ExampleTestDataSelector<Circuit, PCS, LS>::Type;
+
+  // TODO(ashjeong): Implement test for |ShuffleCircuit| GWC version
+  if constexpr ((std::is_same_v<
+                     Circuit, ShuffleCircuit<F, kW, kH, SimpleFloorPlanner>> ||
+                 std::is_same_v<
+                     Circuit,
+                     ShuffleCircuit<F, kW, kH, V1FloorPlanner>>)&&IsGWC<PCS>) {
+    GTEST_SKIP() << "LoadProvingKey test skipped for ShuffleCircuit with GWC";
+    return;
+  }
 
   CHECK(this->prover_->pcs().UnsafeSetup(ExampleTestData::kN, F(2)));
   this->prover_->set_domain(Domain::Create(ExampleTestData::kN));
@@ -338,6 +376,17 @@ TYPED_TEST(ExampleCircuitTest, VerifyProof) {
   F h_eval;
   ASSERT_TRUE(verifier.VerifyProofForTesting(vkey, instance_columns_vec, &proof,
                                              &h_eval));
+
+  // TODO(ashjeong): Implement rest of test for |ShuffleCircuit| GWC version
+  if constexpr ((std::is_same_v<
+                     Circuit, ShuffleCircuit<F, kW, kH, SimpleFloorPlanner>> ||
+                 std::is_same_v<
+                     Circuit,
+                     ShuffleCircuit<F, kW, kH, V1FloorPlanner>>)&&IsGWC<PCS>) {
+    GTEST_SKIP()
+        << "Remaining VerifyProof testing skipped for ShuffleCircuit with GWC";
+    return;
+  }
 
   {
     std::vector<std::vector<Commitment>> expected_advice_commitments_vec{
