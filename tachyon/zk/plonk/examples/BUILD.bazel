@@ -66,6 +66,16 @@ tachyon_cc_library(
     deps = ["//tachyon/zk/plonk/constraint_system:circuit"],
 )
 
+tachyon_cc_library(
+    name = "simple_lookup_circuit_test_data",
+    testonly = True,
+    hdrs = ["simple_lookup_circuit_test_data.h"],
+    deps = [
+        ":circuit_test_data",
+        "//tachyon/base:range",
+    ],
+)
+
 tachyon_cc_unittest(
     name = "example_circuit_tests",
     srcs = ["example_circuit_tests.cc"],
@@ -74,6 +84,8 @@ tachyon_cc_unittest(
         ":circuit_test_type_traits",
         ":simple_circuit",
         ":simple_circuit_test_data",
+        ":simple_lookup_circuit",
+        ":simple_lookup_circuit_test_data",
         "//tachyon/base:array_to_vector",
         "//tachyon/math/elliptic_curves/bn/bn254",
         "//tachyon/zk/base/commitments:gwc_extension",

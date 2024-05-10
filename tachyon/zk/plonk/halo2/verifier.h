@@ -106,8 +106,6 @@ class Verifier : public VerifierBase<PCS> {
   }
 
  private:
-  FRIEND_TEST(SimpleLookupCircuitTest, Verify);
-  FRIEND_TEST(SimpleLookupV1CircuitTest, Verify);
   template <typename>
   FRIEND_TEST(ShuffleCircuitTest, Verify);
 

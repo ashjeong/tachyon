@@ -11,6 +11,8 @@
 #include "tachyon/zk/plonk/examples/circuit_test_type_traits.h"
 #include "tachyon/zk/plonk/examples/simple_circuit.h"
 #include "tachyon/zk/plonk/examples/simple_circuit_test_data.h"
+#include "tachyon/zk/plonk/examples/simple_lookup_circuit.h"
+#include "tachyon/zk/plonk/examples/simple_lookup_circuit_test_data.h"
 #include "tachyon/zk/plonk/halo2/pinned_constraint_system.h"
 #include "tachyon/zk/plonk/halo2/pinned_verifying_key.h"
 #include "tachyon/zk/plonk/keys/proving_key.h"
@@ -34,6 +36,8 @@ using Halo2LS =
     lookup::halo2::Scheme<typename SHPlonk::Poly, typename SHPlonk::Evals,
                           typename SHPlonk::Commitment>;
 
+const size_t kBits = 3;
+
 template <typename _Circuit, typename _PCS, typename _LS>
 struct TestingArguments {
   using Circuit = _Circuit;
@@ -50,7 +54,14 @@ struct ExampleTestDataSelector {
       std::conditional_t<
         std::is_same_v<Circuit, SimpleCircuit<F, SimpleFloorPlanner>>,
           SimpleTestData<SimpleCircuit<F, SimpleFloorPlanner>, PCS, LS>,
-          SimpleTestData<SimpleCircuit<F, V1FloorPlanner>, PCS, LS>>;
+      std::conditional_t<
+        std::is_same_v<Circuit, SimpleCircuit<F, V1FloorPlanner>>,
+          SimpleTestData<SimpleCircuit<F, V1FloorPlanner>, PCS, LS>,
+      std::conditional_t<
+        std::is_same_v<Circuit, SimpleLookupCircuit<F, kBits, SimpleFloorPlanner>>,
+          SimpleLookupTestData<SimpleLookupCircuit<F, kBits, SimpleFloorPlanner>, PCS, LS>,
+          SimpleLookupTestData<SimpleLookupCircuit<F, kBits, V1FloorPlanner>, PCS, LS>
+      >>>;
   // clang-format on
 };
 template <typename TestingType>
@@ -64,7 +75,12 @@ using TestingTypes = testing::Types<
     TestingArguments<SimpleCircuit<SHPlonk::Field, SimpleFloorPlanner>, SHPlonk,
                      Halo2LS>,
     TestingArguments<SimpleCircuit<SHPlonk::Field, V1FloorPlanner>, SHPlonk,
-                     Halo2LS>>;
+                     Halo2LS>,
+    TestingArguments<
+        SimpleLookupCircuit<SHPlonk::Field, kBits, SimpleFloorPlanner>, SHPlonk,
+        Halo2LS>,
+    TestingArguments<SimpleLookupCircuit<SHPlonk::Field, kBits, V1FloorPlanner>,
+                     SHPlonk, Halo2LS>>;
 }  // namespace
 
 TYPED_TEST_SUITE(ExampleCircuitTest, TestingTypes);
