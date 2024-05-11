@@ -21,6 +21,18 @@ class ShuffleTestData<Circuit, PCS, LS, std::enable_if_t<IsSHPlonk<PCS>>>
  public:
   using F = typename PCS::Field;
 
+  // Set flags of values to be used as true
+  constexpr static bool kLFirstFlag = true;
+  constexpr static bool kLLastFlag = true;
+  constexpr static bool kLActiveRowFlag = true;
+  constexpr static bool kFixedColumnsFlag = true;
+  constexpr static bool kFixedPolysFlag = true;
+  constexpr static bool kAdviceCommitmentsFlag = true;
+  constexpr static bool kChallengesFlag = true;
+  constexpr static bool kVanishingHPolyCommitmentsFlag = true;
+  constexpr static bool kAdviceEvalsFlag = true;
+  constexpr static bool kFixedEvalsFlag = true;
+
   constexpr static size_t kW = 2;
   constexpr static size_t kH = 8;
   constexpr static size_t kN = 16;
@@ -482,6 +494,10 @@ class ShuffleTestData<Circuit, PCS, LS, std::enable_if_t<IsSHPlonk<PCS>>>
   };
   // clang-format on
 
+  constexpr static std::string_view kChallenges[] = {
+      "0x2f2cdac7ef66f10d3c910f13e5a4344318eeeceae9edcdd75b4c1976de43475e",
+      "0x154c67d8fa9170f88d424e7634e151902bcf91212c5f7192b58094f50f4da90c"};
+
   constexpr static typename CircuitTest<
       PCS, LS>::Point kVanishingHPolyCommitments[] = {
       {"0x2bb7f1559c415c224b0c0713b6f281c9c2b6658f3af0c2c649bb0d3eb9b48660",
@@ -489,10 +505,6 @@ class ShuffleTestData<Circuit, PCS, LS, std::enable_if_t<IsSHPlonk<PCS>>>
       {"0x2f91475bd7f6c955ab4534ed4d0462491373479089f96c3d1b753a760e92c92d",
        "0x0f2b30e0179380f1a9dda5cb59eb5ff6c0c093f39ff3129b09a8fb4493fcb719"},
   };
-
-  constexpr static std::string_view kChallenges[] = {
-      "0x2f2cdac7ef66f10d3c910f13e5a4344318eeeceae9edcdd75b4c1976de43475e",
-      "0x154c67d8fa9170f88d424e7634e151902bcf91212c5f7192b58094f50f4da90c"};
 
   constexpr static std::string_view kTheta =
       "0x1b05d778b77bda225d239dffc14f3976e8fe1760fd21713b610c3f213589400f";

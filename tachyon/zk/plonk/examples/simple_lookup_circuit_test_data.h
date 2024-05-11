@@ -17,6 +17,25 @@ class SimpleLookupTestData : public CircuitTestData<Circuit, PCS, LS> {
  public:
   using F = typename PCS::Field;
 
+  // Set flags of values to be used as true
+  constexpr static bool kFixedColumnsOtherFlag = true;
+  constexpr static bool kLFirstFlag = true;
+  constexpr static bool kLLastFlag = true;
+  constexpr static bool kLActiveRowFlag = true;
+  constexpr static bool kFixedColumnsFlag = true;
+  constexpr static bool kFixedPolysFlag = true;
+  constexpr static bool kAdviceCommitmentsFlag = true;
+  constexpr static bool kPermutationProductCommitmentsPointsFlag = true;
+  constexpr static bool kLookupProductCommitmentsFlag = true;
+  constexpr static bool kVanishingHPolyCommitmentsFlag = true;
+  constexpr static bool kAdviceEvalsFlag = true;
+  constexpr static bool kFixedEvalsFlag = true;
+  constexpr static bool kLookupProductEvalsFlag = true;
+  constexpr static bool kLookupProductNextEvalsFlag = true;
+  constexpr static bool kLookupPermutedInputEvalsFlag = true;
+  constexpr static bool kLookupPermutedInputPrevEvalsFlag = true;
+  constexpr static bool kLookupPermutedTableEvalsFlag = true;
+
   constexpr static size_t kN = 32;
 
   constexpr static std ::string_view kPinnedConstraintSystem =

@@ -1,8 +1,6 @@
 #ifndef TACHYON_ZK_PLONK_EXAMPLES_CIRCUIT_TEST_DATA_H_
 #define TACHYON_ZK_PLONK_EXAMPLES_CIRCUIT_TEST_DATA_H_
 
-#include <stdint.h>
-
 #include <string_view>
 #include <utility>
 #include <vector>
@@ -15,62 +13,55 @@ namespace tachyon::zk::plonk::halo2 {
 template <typename Circuit, typename PCS, typename LS>
 class CircuitTestData {
  public:
-  constexpr static size_t kN = 1;
-  constexpr static std::string_view kPinnedConstraintSystem = "";
-  constexpr static std::string_view kFixedColumnsOther[0][0] = {};
-  constexpr static AnyColumnKey kColumns[0] = {};
-  constexpr static Label kMapping[0][0] = {};
-  constexpr static Label kAux[0][0] = {};
-  constexpr static size_t kSizes[0][0] = {};
-  constexpr static bool kSelectors[0][0] = {};
+  // constexpr static size_t kN; // REQUIRED
+  // constexpr static bool kPinnedConstraintSystemFlag = false; // REQUIRED
+  constexpr static bool kFixedColumnsOtherFlag = false;
+  constexpr static bool kColumnsFlag = false;
+  constexpr static bool kMappingFlag = false;
+  constexpr static bool kAuxFlag = false;
+  constexpr static bool kSizesFlag = false;
+  // constexpr static bool kSelectorsFlag = false; // REQUIRED
+  // constexpr static bool kUsableRowsFlag = false;
+  // constexpr static bool kPinnedVerifyingKeyFlag = false; // REQUIRED
+  // constexpr static bool kTranscriptReprFlag = false; // REQUIRED
+  constexpr static bool kLFirstFlag = false;
+  constexpr static bool kLLastFlag = false;
+  constexpr static bool kLActiveRowFlag = false;
+  constexpr static bool kFixedColumnsFlag = false;
+  constexpr static bool kFixedPolysFlag = false;
+  constexpr static bool kPermutationsColumnsFlag = false;
+  constexpr static bool kPermutationsPolysFlag = false;
+  // constexpr static bool kProofFlag = false; // REQUIRED
+  constexpr static bool kAdviceCommitmentsFlag = false;
+  constexpr static bool kChallengesFlag = false;
+  // constexpr static bool kThetaFlag = false; // REQUIRED
+  constexpr static bool kPermutationProductCommitmentsPointsFlag = false;
+  // constexpr static bool kBetaFlag = false; // REQUIRED
+  // constexpr static bool kGammaFlag = false; // REQUIRED
+  constexpr static bool kPermutationProductCommitmentsFlag = false;
+  constexpr static bool kLookupProductCommitmentsFlag = false;
+  // constexpr static bool kYFlag = false; // REQUIRED
+  constexpr static bool kVanishingHPolyCommitmentsFlag = false;
+  // constexpr static bool kXFlag = false; // REQUIRED
+  constexpr static bool kAdviceEvalsFlag = false;
+  constexpr static bool kFixedEvalsFlag = false;
+  constexpr static bool kCommonPermutationEvalsFlag = false;
+  constexpr static bool kPermutationProductEvalsFlag = false;
+  constexpr static bool kPermutationProductNextEvalsFlag = false;
+  constexpr static bool kPermutationProductLastEvalsFlag = false;
+  constexpr static bool kLookupProductEvalsFlag = false;
+  constexpr static bool kLookupProductNextEvalsFlag = false;
+  constexpr static bool kLookupPermutedInputEvalsFlag = false;
+  constexpr static bool kLookupPermutedInputPrevEvalsFlag = false;
+  constexpr static bool kLookupPermutedTableEvalsFlag = false;
+  // constexpr static bool kHEvalFlag = false; // REQUIRED
+
   constexpr static base::Range<RowIndex> kUsableRows =
       base::Range<RowIndex>::Until(10);
-  constexpr static std::string_view kPinnedVerifyingKey = "";
-  constexpr static std::string_view kTranscriptRepr = "";
-  constexpr static std::string_view kLFirst[0] = {};
-  constexpr static std::string_view kLLast[0] = {};
-  constexpr static std::string_view kLActiveRow[0] = {};
-  constexpr static std::string_view kFixedColumns[0][0] = {};
-  constexpr static std::string_view kFixedPolys[0][0] = {};
-  constexpr static std::string_view kPermutationsColumns[0][0] = {};
-  constexpr static std::string_view kPermutationsPolys[0][0] = {};
-  constexpr static uint8_t kProof[0] = {};
-  constexpr static
-      typename CircuitTest<PCS, LS>::Point kAdviceCommitments[0][0] = {};
-  constexpr static std::string_view kChallenges[0] = {};
-  constexpr static std::string_view kTheta = "";
-  constexpr static typename CircuitTest<PCS, LS>::Point
-      kPermutationProductCommitmentsInputPoints[0][0] = {};
-  constexpr static typename CircuitTest<PCS, LS>::Point
-      kPermutationProductCommitmentsTablePoints[0][0] = {};
-  constexpr static std::string_view kBeta = "";
-  constexpr static std::string_view kGamma = "";
-  constexpr static typename CircuitTest<PCS, LS>::Point
-      kPermutationProductCommitments[0][0] = {};
-  constexpr static
-      typename CircuitTest<PCS, LS>::Point kLookupProductCommitments[0][0] = {};
-  constexpr static std::string_view kY = "";
-  constexpr static
-      typename CircuitTest<PCS, LS>::Point kVanishingHPolyCommitments[0] = {};
-  constexpr static std::string_view kX = "";
-  constexpr static std::string_view kAdviceEvals[0][0] = {};
-  constexpr static std::string_view kFixedEvals[0] = {};
-  constexpr static std::string_view kCommonPermutationEvals[0] = {};
-  constexpr static std::string_view kPermutationProductEvals[0][0] = {};
-  constexpr static std::string_view kPermutationProductNextEvals[0][0] = {};
-  constexpr static std::string_view kPermutationProductLastEvals[0][0] = {};
-  constexpr static std::string_view kLookupProductEvals[0][0] = {};
-  constexpr static std::string_view kLookupProductNextEvals[0][0] = {};
-  constexpr static std::string_view kLookupPermutedInputEvals[0][0] = {};
-  constexpr static std::string_view kLookupPermutedInputPrevEvals[0][0] = {};
-  constexpr static std::string_view kLookupPermutedTableEvals[0][0] = {};
-  constexpr static std::string_view kHEval = "";
-
   constexpr static
       typename CircuitTest<PCS, LS>::Point kVanishingRandomPolyCommitment{
           "0x0000000000000000000000000000000000000000000000000000000000000001",
           "0x0000000000000000000000000000000000000000000000000000000000000002"};
-
   constexpr static std::string_view kVanishingRandomEval =
       "0x0000000000000000000000000000000000000000000000000000000000000001";
 

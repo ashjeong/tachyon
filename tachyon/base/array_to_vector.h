@@ -7,19 +7,9 @@
 
 namespace tachyon::base {
 
-template <typename T>
-const std::vector<T> ArrayToVector(const T (&arr)[0]) {
-  return {};
-}
-
 template <typename T, size_t N>
 const std::vector<T> ArrayToVector(const T (&arr)[N]) {
   return std::vector<T>(std::begin(arr), std::end(arr));
-}
-
-template <typename T>
-std::vector<std::vector<T>> Array2DToVector2D(const T (&arr)[0][0]) {
-  return {};
 }
 
 template <typename T, size_t A, size_t B>

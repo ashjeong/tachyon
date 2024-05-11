@@ -24,6 +24,29 @@ class SimpleTestData<Circuit, PCS, LS,
   using F = typename PCS::Field;
   using Evals = typename PCS::Evals;
 
+  // Set flags of values to be used as true
+  constexpr static bool kFixedColumnsOtherFlag = true;
+  constexpr static bool kColumnsFlag = true;
+  constexpr static bool kMappingFlag = true;
+  constexpr static bool kAuxFlag = true;
+  constexpr static bool kSizesFlag = true;
+  constexpr static bool kLFirstFlag = true;
+  constexpr static bool kLLastFlag = true;
+  constexpr static bool kLActiveRowFlag = true;
+  constexpr static bool kFixedColumnsFlag = true;
+  constexpr static bool kFixedPolysFlag = true;
+  constexpr static bool kPermutationsColumnsFlag = true;
+  constexpr static bool kPermutationsPolysFlag = true;
+  constexpr static bool kAdviceCommitmentsFlag = true;
+  constexpr static bool kPermutationProductCommitmentsFlag = true;
+  constexpr static bool kVanishingHPolyCommitmentsFlag = true;
+  constexpr static bool kAdviceEvalsFlag = true;
+  constexpr static bool kFixedEvalsFlag = true;
+  constexpr static bool kCommonPermutationEvalsFlag = true;
+  constexpr static bool kPermutationProductEvalsFlag = true;
+  constexpr static bool kPermutationProductNextEvalsFlag = true;
+  constexpr static bool kPermutationProductLastEvalsFlag = true;
+
   constexpr static size_t kN = 16;
 
   constexpr static std::string_view kPinnedConstraintSystem =
@@ -736,6 +759,29 @@ class SimpleTestData<Circuit, PCS, LS,
  public:
   using F = typename PCS::Field;
   using Evals = typename PCS::Evals;
+
+  // Set flags of values to be used as true
+  constexpr static bool kFixedColumnsOtherFlag = true;
+  constexpr static bool kColumnsFlag = true;
+  constexpr static bool kMappingFlag = true;
+  constexpr static bool kAuxFlag = true;
+  constexpr static bool kSizesFlag = true;
+  constexpr static bool kLFirstFlag = true;
+  constexpr static bool kLLastFlag = true;
+  constexpr static bool kLActiveRowFlag = true;
+  constexpr static bool kFixedColumnsFlag = true;
+  constexpr static bool kFixedPolysFlag = true;
+  constexpr static bool kPermutationsColumnsFlag = true;
+  constexpr static bool kPermutationsPolysFlag = true;
+  constexpr static bool kAdviceCommitmentsFlag = true;
+  constexpr static bool kPermutationProductCommitmentsFlag = true;
+  constexpr static bool kVanishingHPolyCommitmentsFlag = true;
+  constexpr static bool kAdviceEvalsFlag = true;
+  constexpr static bool kFixedEvalsFlag = true;
+  constexpr static bool kCommonPermutationEvalsFlag = true;
+  constexpr static bool kPermutationProductEvalsFlag = true;
+  constexpr static bool kPermutationProductNextEvalsFlag = true;
+  constexpr static bool kPermutationProductLastEvalsFlag = true;
 
   constexpr static size_t kN = 16;
 
