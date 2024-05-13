@@ -9,6 +9,7 @@
 #include "tachyon/zk/lookup/halo2/scheme.h"
 #include "tachyon/zk/plonk/examples/fibonacci/fibonacci1_circuit.h"
 #include "tachyon/zk/plonk/examples/fibonacci/fibonacci2_circuit.h"
+#include "tachyon/zk/plonk/examples/fibonacci/fibonacci3_circuit.h"
 #include "tachyon/zk/plonk/layout/floor_planner/simple_floor_planner.h"
 #include "tachyon/zk/plonk/layout/floor_planner/v1/v1_floor_planner.h"
 
@@ -80,7 +81,9 @@ constexpr bool IsFibonacci =
     std::is_same_v<Circuit, Fibonacci1Circuit<F, SimpleFloorPlanner>> ||
     std::is_same_v<Circuit, Fibonacci1Circuit<F, V1FloorPlanner>> ||
     std::is_same_v<Circuit, Fibonacci2Circuit<F, SimpleFloorPlanner>> ||
-    std::is_same_v<Circuit, Fibonacci2Circuit<F, V1FloorPlanner>>;
+    std::is_same_v<Circuit, Fibonacci2Circuit<F, V1FloorPlanner>> ||
+    std::is_same_v<Circuit, Fibonacci3Circuit<F, SimpleFloorPlanner>> ||
+    std::is_same_v<Circuit, Fibonacci3Circuit<F, V1FloorPlanner>>;
 
 }  // namespace tachyon::zk::plonk
 
