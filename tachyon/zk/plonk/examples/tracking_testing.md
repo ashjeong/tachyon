@@ -3,13 +3,23 @@
 ## Currently Tested Types
 
 | Circuit             | FloorPlanner       | PCS     | LS      |
-| ------------------- | ------------------ | ------- | ------- |
+| ------------------- | ------------------ | ------- | ------- | --- |
 | SimpleCircuit       | SimpleFloorPlanner | SHPlonk | Halo2LS |
 | SimpleCircuit       | V1FloorPlanner     | SHPlonk | Halo2LS |
 | SimpleLookupCircuit | SimpleFloorPlanner | SHPlonk | Halo2LS |
 | SimpleLookupCircuit | V1FloorPlanner     | SHPlonk | Halo2LS |
 | ShuffleCircuit      | SimpleFloorPlanner | SHPlonk | Halo2LS |
 | ShuffleCircuit      | V1FloorPlanner     | SHPlonk | Halo2LS |
+| Fibonacci1Circuit   | SimpleFloorPlanner | SHPlonk | Halo2LS |
+| Fibonacci1Circuit   | V1FloorPlanner     | SHPlonk | Halo2LS |
+| Fibonacci2Circuit   | SimpleFloorPlanner | SHPlonk | Halo2LS |
+| Fibonacci2Circuit   | V1FloorPlanner     | SHPlonk | Halo2LS |
+| Fibonacci3Circuit   | SimpleFloorPlanner | SHPlonk | Halo2LS |
+| Fibonacci3Circuit   | V1FloorPlanner     | SHPlonk | Halo2LS |
+| Fibonacci4Circuit   | SimpleFloorPlanner | SHPlonk | Halo2LS | \*  |
+| Fibonacci4Circuit   | V1FloorPlanner     | SHPlonk | Halo2LS | \*  |
+
+- Only `CreateProof` and `VerifyProof` are run
 
 **In Progress**:
 
@@ -24,6 +34,9 @@ The following circuits result in the same test data when using `SimpleFloorPlann
 
 - SimpleLookupCircuit
 - ShuffleCircuit
+- Fibonacci2Circuit
+- Fibonacci3Circuit
+- Fibonacci4Circuit
 
 ## Test Data Variables
 
@@ -35,12 +48,12 @@ The following circuits result in the same test data when using `SimpleFloorPlann
 
 Refer to the following files to learn more about these variables:
 
-- [circuit_test_data.h](/circuit_test_data.h)
-- [circuit_test.cc](/circuit_test_data.cc)
+- [circuit_test_data.h](circuit_test_data.h)
+- [circuit_test.cc](circuit_test_data.cc)
 - Any `...test_data.h` file:
-  - [shuffle_circuit_test_data.h](/shuffle_circuit_test_data.h)
-  - [simple_circuit_test_data.h](/simple_circuit_test_data.h)
-  - [simple_lookup_circuit_test_data.h](/simple_lookup_circuit_test_data.h)
+  - [shuffle_circuit_test_data.h](shuffle_circuit_test_data.h)
+  - [simple_circuit_test_data.h](simple_circuit_test_data.h)
+  - [simple_lookup_circuit_test_data.h](simple_lookup_circuit_test_data.h)
 
 1. :red_square: kN
 2. :red_square: kPinnedConstraintSystem
