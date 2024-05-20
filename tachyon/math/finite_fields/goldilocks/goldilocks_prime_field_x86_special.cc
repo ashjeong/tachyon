@@ -104,14 +104,6 @@ std::string CLASS::ToHexString(bool pad_zero) const {
 
 #if USE_MONTGOMERY == 1
 template <typename Config>
-mpz_class CLASS::ToMpzClass() const {
-  mpz_class ret;
-  uint64_t limbs[] = {uint64_t{*this}};
-  gmp::WriteLimbs(limbs, N, &ret);
-  return ret;
-}
-
-template <typename Config>
 BigInt<CLASS::N> CLASS::ToMontgomery() const {
   return BigInt<N>(::Goldilocks::to_montgomery(uint64_t{*this}));
 }
