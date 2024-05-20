@@ -51,11 +51,7 @@ TYPED_TEST(PrimeFieldTest, One) {
 
   EXPECT_TRUE(F::One().IsOne());
   EXPECT_FALSE(F::Zero().IsOne());
-  if constexpr (F::Config::kUseMontgomery) {
-    EXPECT_EQ(F::Config::kOne, F(1).ToMontgomery());
-  } else {
-    EXPECT_EQ(F::Config::kOne, F(1).ToBigInt());
-  }
+  EXPECT_EQ(F::Config::kOne, F(1).value());
 }
 
 TYPED_TEST(PrimeFieldTest, BigIntConversion) {
