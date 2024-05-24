@@ -352,11 +352,9 @@ int GenerationConfig::GenerateGpuHdr() const {
   bool is_small_field = num_bits <= 32;
 
   std::string tpl_content;
-  if (is_small_field) {
-    CHECK(base::ReadFileToString(small_gpu_hdr_tpl_path, &tpl_content));
-  } else {
-    CHECK(base::ReadFileToString(gpu_hdr_tpl_path, &tpl_content));
-  }
+  CHECK(base::ReadFileToString(
+      is_small_field ? small_gpu_hdr_tpl_path : gpu_hdr_tpl_path,
+      &tpl_content));
 
   absl::flat_hash_map<std::string, std::string> replacements = {
       {"%{config_header_path}", math::ConvertToConfigHdr(GetHdrPath()).value()},

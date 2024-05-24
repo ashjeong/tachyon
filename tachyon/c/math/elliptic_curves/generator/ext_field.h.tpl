@@ -83,9 +83,11 @@ TACHYON_C_EXPORT tachyon_%{type}_fq%{degree} tachyon_%{type}_fq%{degree}_sqr(con
  * @brief Inverts an Fq%{degree} element.
  *
  * @param a Pointer to the Fq%{degree} element to invert.
- * @return The inverted Fq%{degree} element. If the input is zero, the program will be killed.
+ * @param output Pointer to the Fq%{degree} element to output.
+ * @return Bool to determine if the inverse was valid.
+ *         If the input is zero, the program will be killed.
  */
-TACHYON_C_EXPORT tachyon_%{type}_fq%{degree} tachyon_%{type}_fq%{degree}_inv(const tachyon_%{type}_fq%{degree}* a);
+TACHYON_C_EXPORT bool tachyon_%{type}_fq%{degree}_inv(const tachyon_%{type}_fq%{degree}* a, tachyon_%{type}_fq%{degree}* output);
 
 /**
  * @brief Adds two Fq%{degree} elements.

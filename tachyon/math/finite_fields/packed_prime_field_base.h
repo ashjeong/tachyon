@@ -4,6 +4,7 @@
 #include <stddef.h>
 
 #include <array>
+#include <optional>
 #include <string>
 
 #include "tachyon/base/containers/container_util.h"
@@ -86,16 +87,14 @@ class PackedPrimeFieldBase : public Field<Derived> {
   }
 
   // MultiplicativeGroup methods
-  Derived Inverse() const {
+  std::optional<Derived> Inverse() const {
     NOTIMPLEMENTED();
-    Derived ret;
-    return ret;
+    return std::nullopt;
   }
 
-  Derived& InverseInPlace() {
+  std::optional<Derived*> InverseInPlace() {
     NOTIMPLEMENTED();
-    Derived& self = static_cast<Derived&>(*this);
-    return self;
+    return std::nullopt;
   }
 
  protected:

@@ -6,6 +6,7 @@
 #ifndef TACHYON_MATH_FINITE_FIELDS_CUBIC_EXTENSION_FIELD_H_
 #define TACHYON_MATH_FINITE_FIELDS_CUBIC_EXTENSION_FIELD_H_
 
+#include <optional>
 #include <string>
 #include <utility>
 
@@ -267,15 +268,18 @@ class CubicExtensionField : public CyclotomicMultiplicativeSubgroup<Derived> {
   }
 
   // MultiplicativeGroup methods
-  constexpr Derived Inverse() const {
+  constexpr std::optional<Derived> Inverse() const {
     Derived ret;
-    DoInverse(*static_cast<const Derived*>(this), ret);
+    if (UNLIKELY(!DoInverse(*static_cast<const Derived*>(this), ret)))
+      return std::nullopt;
     return ret;
   }
 
-  constexpr Derived& InverseInPlace() {
-    DoInverse(*static_cast<const Derived*>(this), *static_cast<Derived*>(this));
-    return *static_cast<Derived*>(this);
+  constexpr std::optional<Derived*> InverseInPlace() {
+    if (UNLIKELY(!DoInverse(*static_cast<const Derived*>(this),
+                            *static_cast<Derived*>(this))))
+      return std::nullopt;
+    return static_cast<Derived*>(this);
   }
 
  protected:
@@ -364,10 +368,13 @@ class CubicExtensionField : public CyclotomicMultiplicativeSubgroup<Derived> {
     b.c2_ = s1 + s2 + s3 - s0 - s4;
   }
 
-  constexpr static void DoInverse(const Derived& a, Derived& b) {
+  [[nodiscard]] constexpr static bool DoInverse(const Derived& a, Derived& b) {
     // NOTE(chokobole): CHECK(!IsZero()) is not a device code.
     // See https://github.com/kroma-network/tachyon/issues/76
-    if (a.IsZero()) return;
+    if (UNLIKELY(a.IsZero())) {
+      LOG(ERROR) << "Inverse of zero attempted";
+      return false;
+    }
     // clang-format off
     // See https://eprint.iacr.org/2010/354.pdf
     // From "High-Speed Software Implementation of the Optimal Ate AbstractPairing over Barreto-Naehrig Curves"; Algorithm 17
@@ -412,18 +419,20 @@ class CubicExtensionField : public CyclotomicMultiplicativeSubgroup<Derived> {
     //    = 1 / (c0 * (t0 - t5 * q) + c1³ + c2³ * q - 2 * c0 * c1 * c2)
     //    = 1 / (c0 * (c0² - c1 * c2 * q) + c1³ + c2³ * q - 2 * c0 * c1 * c2)
     //    = 1 / (c0³ + c1³ + c2³ - (2 + q) * c0 * c1 * c2)
-    BaseField t6 = (a.c0_ * s0 + a3).Inverse();
+    std::optional<BaseField> t6 = (a.c0_ * s0 + a3).Inverse();
+    if (UNLIKELY(!t6)) return false;
 
     // c0 = s0 * t6
     // c0 = (t0 - c1 * c2 * q) / (c0³ + c1³ + c2³ - (2 + q) * c0 * c1 * c2)
     //    = (c0² - c1 * c2 * q) / (c0³ + c1³ + c2³ - (2 + q) * c0 * c1 * c2)
-    b.c0_ = s0 * t6;
+    b.c0_ = s0 * *t6;
     // c1 = s1 * t6
     //    = (c2² * q - c0 * c1) / (c0³ + c1³ + c2³ - (2 + q) * c0 * c1 * c2)
-    b.c1_ = s1 * t6;
+    b.c1_ = s1 * *t6;
     // c2 = s1 * t6
     //    = (c1² - c0 * c2) / (c0³ + c1³ + c2³ - (2 + q) * c0 * c1 * c2)
-    b.c2_ = s2 * t6;
+    b.c2_ = s2 * *t6;
+    return true;
   }
 
   // c = c0_ + c1_ * X + c2_ * X²

@@ -171,11 +171,12 @@ class PrimeField<_Config, std::enable_if_t<!_Config::kIsSpecialPrime &&
   }
 
   // MultiplicativeGroup methods
-  constexpr PrimeField Inverse() const {
+  constexpr std::optional<PrimeField> Inverse() const {
     // TODO(chokobole): Benchmark between this and |this->Pow(GetModulus() - 2)|
     // and use the faster one.
     // |result.s| * |value_| + |result.t| * |GetModulus()| = |result.r|
     // |result.s| * |value_| = |result.r| (mod |GetModulus()|)
+    if (UNLIKELY(IsZero())) return std::nullopt;
     EGCD<int64_t>::Result result = EGCD<int64_t>::Compute(value_, GetModulus());
     DCHECK_EQ(result.r, 1);
     if (result.s > 0) {
@@ -185,8 +186,9 @@ class PrimeField<_Config, std::enable_if_t<!_Config::kIsSpecialPrime &&
     }
   }
 
-  constexpr PrimeField& InverseInPlace() {
+  constexpr std::optional<PrimeField*> InverseInPlace() {
     // See comment in |Inverse()|.
+    if (UNLIKELY(IsZero())) return std::nullopt;
     EGCD<int64_t>::Result result = EGCD<int64_t>::Compute(value_, GetModulus());
     DCHECK_EQ(result.r, 1);
     if (result.s > 0) {
@@ -194,7 +196,7 @@ class PrimeField<_Config, std::enable_if_t<!_Config::kIsSpecialPrime &&
     } else {
       value_ = int64_t{GetModulus()} + result.s;
     }
-    return *this;
+    return this;
   }
 
  private:

@@ -6,6 +6,7 @@
 #ifndef TACHYON_MATH_FINITE_FIELDS_CYCLOTOMIC_MULTIPLICATIVE_SUBGROUP_H_
 #define TACHYON_MATH_FINITE_FIELDS_CYCLOTOMIC_MULTIPLICATIVE_SUBGROUP_H_
 
+#include <optional>
 #include <tuple>
 #include <vector>
 
@@ -48,7 +49,7 @@ class CyclotomicMultiplicativeSubgroup : public FiniteField<F> {
     }
   }
 
-  [[nodiscard]] constexpr F CyclotomicInverse() const {
+  constexpr std::optional<F> CyclotomicInverse() const {
     const F* f = static_cast<const F*>(this);
     if constexpr (internal::SupportsFastCyclotomicInverse<F>::value) {
       return f->FastCyclotomicInverse();
@@ -57,7 +58,7 @@ class CyclotomicMultiplicativeSubgroup : public FiniteField<F> {
     }
   }
 
-  constexpr F& CyclotomicInverseInPlace() {
+  constexpr std::optional<F*> CyclotomicInverseInPlace() {
     F* f = static_cast<F*>(this);
     if constexpr (internal::SupportsFastCyclotomicInverseInPlace<F>::value) {
       return f->FastCyclotomicInverseInPlace();
@@ -97,7 +98,7 @@ class CyclotomicMultiplicativeSubgroup : public FiniteField<F> {
     // base. Otherwise we do nothing with the variable, so we default it to one.
     F inverse = F::One();
     if constexpr (internal::SupportsFastCyclotomicInverse<F>::value) {
-      inverse = CyclotomicInverse();
+      inverse = *CyclotomicInverse();
     } else {
       std::ignore = inverse;
     }

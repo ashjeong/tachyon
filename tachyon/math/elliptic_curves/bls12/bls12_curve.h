@@ -7,6 +7,7 @@
 #define TACHYON_MATH_ELLIPTIC_CURVES_BLS12_BLS12_CURVE_H_
 
 #include <functional>
+#include <optional>
 #include <vector>
 
 #include "tachyon/base/parallelize.h"
@@ -61,7 +62,7 @@ class BLS12Curve : public PairingFriendlyCurve<Config> {
                              std::multiplies<>());
 
     if constexpr (Config::kXIsNegative) {
-      f.CyclotomicInverseInPlace();
+      CHECK(f.CyclotomicInverseInPlace());
     }
     return f;
   }
@@ -74,22 +75,23 @@ class BLS12Curve : public PairingFriendlyCurve<Config> {
 
     // f1 = f.CyclotomicInverseInPlace() = f^(q⁶)
     Fp12 f1 = f;
-    f1.CyclotomicInverseInPlace();
+    CHECK(f1.CyclotomicInverseInPlace());
 
     // f2 = f⁻¹
-    Fp12 f2 = f.Inverse();
+    std::optional<Fp12> f2 = f.Inverse();
+    CHECK(f2);
 
     // r = f^(q⁶ - 1)
-    Fp12 r = f1 * f2;
+    Fp12 r = f1 * *f2;
 
     // f2 = f^(q⁶ - 1)
-    f2 = r;
+    *f2 = r;
     // r = f^((q⁶ - 1)(q²))
     r.FrobeniusMapInPlace(2);
 
     // r = f^((q⁶ - 1)(q²)) * f^(q⁶ - 1)
     // r = f^((q⁶ - 1)(q² + 1))
-    r *= f2;
+    r *= *f2;
 
     // Hard part of the final exponentiation:
     // y0 = r²
@@ -97,22 +99,23 @@ class BLS12Curve : public PairingFriendlyCurve<Config> {
     // y1 = (r)ˣ
     Fp12 y1 = Base::PowByX(r);
     // y2 = (r)⁻¹
-    Fp12 y2 = r.CyclotomicInverse();
+    std::optional<Fp12> y2 = r.CyclotomicInverse();
+    CHECK(y2);
     // y1 = y1 * y2 = r^(x - 1)
-    y1 *= y2;
+    y1 *= *y2;
     // y2 = (y1)ˣ = r^(x² - x)
-    y2 = Base::PowByX(y1);
+    *y2 = Base::PowByX(y1);
     // y1 = (y1)⁻¹ = r^(-x + 1)
-    y1.CyclotomicInverseInPlace();
+    CHECK(y1.CyclotomicInverseInPlace());
     // y1 = y1 * y2 = r^(x² - 2x + 1)
-    y1 *= y2;
+    y1 *= *y2;
     // y2 = (y1)ˣ = r^(x³ - 2x² + x)
-    y2 = Base::PowByX(y1);
+    *y2 = Base::PowByX(y1);
     // y1 = (y1)^q = r^(q * (x² - 2x + 1))
     y1.FrobeniusMapInPlace(1);
     // y1 = y1 * y2 = r^(q * (x² - 2x  + 1) +
     //                   1 * (x³ - 2x² + x))
-    y1 *= y2;
+    y1 *= *y2;
     // r = r * y0 = r³
     r *= y0;
     // y0 = (y1)ˣ = r^(q * (x³ - 2x² + x) +
@@ -120,17 +123,17 @@ class BLS12Curve : public PairingFriendlyCurve<Config> {
     y0 = Base::PowByX(y1);
     // y2 = (y0)ˣ = r^(q * (x⁴ - 2x³ + x²) +
     //                 1 * (x⁵ - 2x⁴ + x³))
-    y2 = Base::PowByX(y0);
+    *y2 = Base::PowByX(y0);
     // y0 = (y1)^(q²) = r^(q³ * (x² - 2x  + 1)) +
     //                     q² * (x³ - 2x² + x))
     y0 = y1;
     y0.FrobeniusMapInPlace(2);
     // y1 = (y1)⁻¹ = r^(q * (-x² + 2x  - 1)) +
     //                  1 * (-x³ + 2x² - x))
-    y1.CyclotomicInverseInPlace();
+    CHECK(y1.CyclotomicInverseInPlace());
     // y1 = y1 * y2 = r^(q * (x⁴ - 2x³ + 2x  - 1)) +
     //                   1 * (x⁵ - 2x⁴ + 2x² - x))
-    y1 *= y2;
+    y1 *= *y2;
     // y1 = y1 * y0 = r^(q³ * (x² - 2x  +  1)) +
     //                   q² * (x³ - 2x² +  x))
     //                   q  * (x⁴ - 2x³ + 2x  - 1)) +

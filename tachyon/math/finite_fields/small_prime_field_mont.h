@@ -189,10 +189,15 @@ class PrimeField<_Config, std::enable_if_t<!_Config::kIsSpecialPrime &&
   }
 
   // MultiplicativeGroup methods
-  constexpr PrimeField Inverse() const { return this->Pow(GetModulus() - 2); }
+  constexpr std::optional<PrimeField> Inverse() const {
+    if (UNLIKELY(IsZero())) return std::nullopt;
+    return this->Pow(GetModulus() - 2);
+  }
 
-  constexpr PrimeField& InverseInPlace() {
-    return *this = this->Pow(GetModulus() - 2);
+  constexpr std::optional<PrimeField*> InverseInPlace() {
+    if (UNLIKELY(IsZero())) return std::nullopt;
+    *this = this->Pow(GetModulus() - 2);
+    return this;
   }
 
  private:

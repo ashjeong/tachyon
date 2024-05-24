@@ -1,6 +1,7 @@
 #ifndef TACHYON_MATH_ELLIPTIC_CURVES_SHORT_WEIERSTRASS_PROJECTIVE_POINT_H_
 #define TACHYON_MATH_ELLIPTIC_CURVES_SHORT_WEIERSTRASS_PROJECTIVE_POINT_H_
 
+#include <optional>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -214,7 +215,7 @@ class ProjectivePoint<
     } else if (z_.IsOne()) {
       return {x_, y_};
     } else {
-      BaseField z_inv = z_.Inverse();
+      BaseField z_inv = *z_.Inverse();
       return {x_ * z_inv, y_ * z_inv};
     }
   }

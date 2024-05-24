@@ -1,3 +1,5 @@
+#include <optional>
+
 #include "gtest/gtest.h"
 
 #include "tachyon/c/math/elliptic_curves/bn/bn254/fr.h"
@@ -78,8 +80,10 @@ TEST_F(PrimeFieldTest, Sqr) {
 }
 
 TEST_F(PrimeFieldTest, Inv) {
-  tachyon_bn254_fr c_ret = tachyon_bn254_fr_inv(&c_a_);
-  EXPECT_EQ(c::base::native_cast(c_ret), a_.Inverse());
+  tachyon_bn254_fr c_a_inv;
+  std::optional<math::bn254::Fr> a_inv = a_.Inverse();
+  EXPECT_TRUE(tachyon_bn254_fr_inv(&c_a_, &c_a_inv) && a_inv);
+  EXPECT_EQ(c::base::native_cast(c_a_inv), *a_inv);
 }
 
 TEST_F(PrimeFieldTest, Eq) {

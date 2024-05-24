@@ -47,12 +47,14 @@ tachyon_%{type}_fq%{degree} tachyon_%{type}_fq%{degree}_sqr(const tachyon_%{type
   return c_cast(native_a.SquareInPlace());
 }
 
-tachyon_%{type}_fq%{degree} tachyon_%{type}_fq%{degree}_inv(const tachyon_%{type}_fq%{degree}* a) {
+bool tachyon_%{type}_fq%{degree}_inv(const tachyon_%{type}_fq%{degree}* a, tachyon_%{type}_fq%{degree}* output) {
   using namespace tachyon::c::base;
   using NativeType =
       typename TypeTraits<tachyon_%{type}_fq%{degree}>::NativeType;
   NativeType native_a = native_cast(*a);
-  return c_cast(native_a.InverseInPlace());
+  if (!native_a.InverseInPlace()) return false;
+  *output = c_cast(native_a);
+  return true;
 }
 
 tachyon_%{type}_fq%{degree} tachyon_%{type}_fq%{degree}_add(const tachyon_%{type}_fq%{degree}* a,

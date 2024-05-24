@@ -277,17 +277,19 @@ class PrimeField<_Config, std::enable_if_t<!_Config::kIsSpecialPrime &&
   }
 
   // MultiplicativeGroup methods
-  constexpr PrimeField Inverse() const {
+  constexpr std::optional<PrimeField> Inverse() const {
     PrimeField ret;
-    ret.value_ = value_.template MontgomeryInverse<Config::kModulusHasSpareBit>(
-        Config::kModulus, Config::kMontgomeryR2);
+    if (!value_.template MontgomeryInverse<Config::kModulusHasSpareBit>(
+            Config::kModulus, Config::kMontgomeryR2, ret.value_))
+      return std::nullopt;
     return ret;
   }
 
-  constexpr PrimeField& InverseInPlace() {
-    value_ = value_.template MontgomeryInverse<Config::kModulusHasSpareBit>(
-        Config::kModulus, Config::kMontgomeryR2);
-    return *this;
+  constexpr std::optional<PrimeField*> InverseInPlace() {
+    if (!value_.template MontgomeryInverse<Config::kModulusHasSpareBit>(
+            Config::kModulus, Config::kMontgomeryR2, value_))
+      return std::nullopt;
+    return this;
   }
 
  private:

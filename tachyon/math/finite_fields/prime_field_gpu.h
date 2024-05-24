@@ -263,15 +263,15 @@ class PrimeFieldGpu final : public PrimeFieldBase<PrimeFieldGpu<_Config>> {
   }
 
   // MultiplicativeGroup methods
-  __device__ constexpr PrimeFieldGpu Inverse() const {
+  __device__ constexpr std::optional<PrimeFieldGpu> Inverse() const {
     PrimeFieldGpu ret;
-    DoInverse(*this, ret);
+    if (UNLIKELY(!DoInverse(*this, ret))) return std::nullopt;
     return ret;
   }
 
-  __device__ constexpr PrimeFieldGpu& InverseInPlace() {
-    DoInverse(*this, *this);
-    return *this;
+  __device__ constexpr std::optional<PrimeFieldGpu*> InverseInPlace() {
+    if (UNLIKELY(!DoInverse(*this, *this))) return std::nullopt;
+    return this;
   }
 
  private:
@@ -413,9 +413,12 @@ class PrimeFieldGpu final : public PrimeFieldBase<PrimeFieldGpu<_Config>> {
                                                                    : results;
   }
 
-  __device__ constexpr static void DoInverse(const PrimeFieldGpu& a,
-                                             PrimeFieldGpu& b) {
-    if (a.IsZero()) return;
+  [[nodiscard]] __device__ constexpr static bool DoInverse(
+      const PrimeFieldGpu& a, PrimeFieldGpu& b) {
+    if (UNLIKELY(a.IsZero())) {
+      LOG(ERROR) << "Inverse of zero attempted";
+      return false;
+    }
 
     BigInt<N> u = a.value_;
     BigInt<N> v = GetModulus();
@@ -451,6 +454,7 @@ class PrimeFieldGpu final : public PrimeFieldBase<PrimeFieldGpu<_Config>> {
     } else {
       b = d;
     }
+    return true;
   }
 
   BigInt<N> value_;

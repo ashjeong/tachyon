@@ -102,9 +102,10 @@ TACHYON_C_EXPORT tachyon_%{type}_%{suffix} tachyon_%{type}_%{suffix}_sqr(const t
 /**
  * @brief Calculates the multiplicative inverse of an element in the finite field %{suffix}.
  * @param a Pointer to the element to invert.
- * @return The multiplicative inverse of a in %{suffix}.
+ * @param output Pointer to the output parameter.
+ * @return Bool to determine if the ivnerse vaild.
  */
-TACHYON_C_EXPORT tachyon_%{type}_%{suffix} tachyon_%{type}_%{suffix}_inv(const tachyon_%{type}_%{suffix}* a);
+TACHYON_C_EXPORT bool tachyon_%{type}_%{suffix}_inv(const tachyon_%{type}_%{suffix}* a, tachyon_%{type}_%{suffix}* output);
 
 /**
  * @brief Checks if two elements in the finite field %{suffix} are equal.

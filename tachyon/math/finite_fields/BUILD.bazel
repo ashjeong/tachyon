@@ -193,7 +193,10 @@ tachyon_cc_library(
         "prime_field_gpu_debug.h",
         "prime_field_ops_internal.h",
     ],
-    deps = [":finite_field_forwards"],
+    deps = [
+        ":finite_field_forwards",
+        "//tachyon/base:logging",
+    ],
 )
 
 tachyon_cc_library(
@@ -227,6 +230,7 @@ tachyon_cc_library(
     hdrs = ["quadratic_extension_field.h"],
     deps = [
         ":cyclotomic_multiplicative_subgroup",
+        "//tachyon/base:logging",
         "//tachyon/base/buffer:copyable",
         "//tachyon/base/json",
         "//tachyon/math/geometry:point2",

@@ -219,10 +219,11 @@ class PointXYZZ<_Curve,
     } else if (zz_.IsOne()) {
       return {x_, y_};
     } else {
-      BaseField z_inv_cubic = zzz_.Inverse();
-      BaseField z_inv_square = z_inv_cubic * zz_;
+      std::optional<BaseField> z_inv_cubic = zzz_.Inverse();
+      CHECK(z_inv_cubic);
+      BaseField z_inv_square = *z_inv_cubic * zz_;
       z_inv_square.SquareInPlace();
-      return {x_ * z_inv_square, y_ * z_inv_cubic};
+      return {x_ * z_inv_square, y_ * *z_inv_cubic};
     }
   }
 

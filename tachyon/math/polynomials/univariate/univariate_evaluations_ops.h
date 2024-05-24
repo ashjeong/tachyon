@@ -7,6 +7,7 @@
 #define TACHYON_MATH_POLYNOMIALS_UNIVARIATE_UNIVARIATE_EVALUATIONS_OPS_H_
 
 #include <algorithm>
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -225,11 +226,19 @@ class UnivariateEvaluationsOp {
   }
 
   static Poly Div(const Poly& self, const F& scalar) {
-    return Mul(self, scalar.Inverse());
+    const std::optional<F> scalar_inv = scalar.Inverse();
+    if (UNLIKELY(!scalar_inv)) {
+      NOTREACHED() << "Divide by zero scalar";
+    }
+    return Mul(self, *scalar_inv);
   }
 
   static Poly& DivInPlace(Poly& self, const F& scalar) {
-    return MulInPlace(self, scalar.Inverse());
+    const std::optional<F> scalar_inv = scalar.Inverse();
+    if (UNLIKELY(!scalar_inv)) {
+      NOTREACHED() << "Divide by zero scalar";
+    }
+    return MulInPlace(self, *scalar_inv);
   }
 };
 

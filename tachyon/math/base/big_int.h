@@ -681,10 +681,10 @@ struct ALIGNAS(internal::LimbsAlignment(N)) BigInt {
   }
 
   template <bool ModulusHasSpareBit>
-  constexpr BigInt MontgomeryInverse(const BigInt& modulus,
-                                     const BigInt& r2) const {
-    // See https://github.com/kroma-network/tachyon/issues/76
-    CHECK(!IsZero());
+  [[nodiscard]] constexpr bool MontgomeryInverse(const BigInt& modulus,
+                                                 const BigInt& r2,
+                                                 BigInt& output) const {
+    if (UNLIKELY(IsZero())) return false;
 
     // Guajardo Kumar Paar Pelzl
     // Efficient Software-Implementation of Finite Fields with Applications to
@@ -749,10 +749,11 @@ struct ALIGNAS(internal::LimbsAlignment(N)) BigInt {
     }
 
     if (u.IsOne()) {
-      return b;
+      output = b;
     } else {
-      return c;
+      output = c;
     }
+    return true;
   }
 
   // TODO(chokobole): This can be optimized since the element of vector occupies

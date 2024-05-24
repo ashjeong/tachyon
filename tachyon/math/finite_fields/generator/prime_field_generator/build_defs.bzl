@@ -323,17 +323,12 @@ def _do_generate_prime_fields(
             **kwargs
         )
 
-    if is_small_prime_field:
-        prime_field_gpu_dep = small_prime_field_dep
-    else:
-        prime_field_gpu_dep = "//tachyon/math/finite_fields:prime_field_gpu"
-
     tachyon_cc_library(
         name = "{}_gpu".format(name),
         hdrs = [":{}_gen_gpu_hdr".format(name)],
         deps = [
             ":{}_config".format(name),
-            prime_field_gpu_dep,
+            small_prime_field_dep if is_small_prime_field else "//tachyon/math/finite_fields:prime_field_gpu",
         ],
         **kwargs
     )
