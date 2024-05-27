@@ -96,7 +96,11 @@ class PrimeFieldBase : public FiniteField<F> {
         return false;
       }
 
-      omega = F::FromMontgomery(Config::kLargeSubgroupRootOfUnity);
+      if constexpr (F::Config::kUseMontgomery) {
+        omega = F::FromMontgomery(Config::kLargeSubgroupRootOfUnity);
+      } else {
+        omega = F(Config::kLargeSubgroupRootOfUnity);
+      }
       for (size_t i = factors.q_adicity; i < Config::kSmallSubgroupAdicity;
            ++i) {
         omega = omega.Pow(Config::kSmallSubgroupBase);
@@ -113,7 +117,11 @@ class PrimeFieldBase : public FiniteField<F> {
         return false;
       }
 
-      omega = F::FromMontgomery(Config::kTwoAdicRootOfUnity);
+      if constexpr (F::Config::kUseMontgomery) {
+        omega = F::FromMontgomery(Config::kTwoAdicRootOfUnity);
+      } else {
+        omega = F(Config::kTwoAdicRootOfUnity);
+      }
       for (uint32_t i = log_size_of_group; i < Config::kTwoAdicity; ++i) {
         omega.SquareInPlace();
       }

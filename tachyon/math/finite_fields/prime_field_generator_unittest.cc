@@ -1,3 +1,5 @@
+#include <optional>
+
 #include "gtest/gtest.h"
 
 #include "tachyon/math/elliptic_curves/bls12/bls12_381/fq.h"
@@ -59,29 +61,13 @@ TYPED_TEST(PrimeFieldGeneratorTest, One) {
   using PrimeField = TypeParam;
   EXPECT_TRUE(PrimeField::One().IsOne());
   EXPECT_FALSE(PrimeField::Zero().IsOne());
-  if constexpr (PrimeField::Config::kUseMontgomery) {
-    EXPECT_EQ(PrimeField::Config::kOne, PrimeField(1).ToMontgomery());
-  } else {
-    EXPECT_EQ(PrimeField::Config::kOne, PrimeField(1).ToBigInt());
-  }
+  EXPECT_EQ(PrimeField::Config::kOne, PrimeField(1).value());
 }
 
 TYPED_TEST(PrimeFieldGeneratorTest, BigIntConversion) {
   using PrimeField = TypeParam;
   PrimeField r = PrimeField::Random();
   EXPECT_EQ(PrimeField::FromBigInt(r.ToBigInt()), r);
-}
-
-TYPED_TEST(PrimeFieldGeneratorTest, MontgomeryConversion) {
-  using PrimeField = TypeParam;
-  PrimeField r = PrimeField::Random();
-  EXPECT_EQ(PrimeField::FromMontgomery(r.ToMontgomery()), r);
-}
-
-TYPED_TEST(PrimeFieldGeneratorTest, MpzClassConversion) {
-  using PrimeField = TypeParam;
-  PrimeField r = PrimeField::Random();
-  EXPECT_EQ(PrimeField::FromMpzClass(r.ToMpzClass()), r);
 }
 
 TYPED_TEST(PrimeFieldGeneratorTest, EqualityOperators) {
@@ -120,11 +106,14 @@ TYPED_TEST(PrimeFieldGeneratorTest, AdditiveGroupOperators) {
 TYPED_TEST(PrimeFieldGeneratorTest, MultiplicativeGroupOperators) {
   using PrimeField = TypeParam;
   PrimeField f = PrimeField::Random();
+  while (f.IsZero()) {
+    f = PrimeField::Random();
+  }
   SCOPED_TRACE(absl::Substitute("f: $0", f.ToString()));
-  PrimeField f_inv = f.Inverse();
-  EXPECT_EQ(f * f_inv, PrimeField::One());
-  f.InverseInPlace();
-  EXPECT_EQ(f, f_inv);
+  const std::optional<PrimeField> f_inv = f.Inverse();
+  EXPECT_EQ(f * *f_inv, PrimeField::One());
+  EXPECT_TRUE(f.InverseInPlace());
+  EXPECT_EQ(f, *f_inv);
 
   PrimeField f_sqr = f.Square();
   EXPECT_EQ(f * f, f_sqr);

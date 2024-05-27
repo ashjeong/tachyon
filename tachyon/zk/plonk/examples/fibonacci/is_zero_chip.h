@@ -75,7 +75,8 @@ class IsZeroChip {
   }
 
   void Assign(Region<F>& region, RowIndex offset, const Value<F>& value) const {
-    const F value_inv = value.IsZero() ? F::Zero() : value.value().Inverse();
+    const std::optional<F> value_try_inv = value.value().Inverse();
+    const F value_inv = !value_try_inv ? F::Zero() : *value_try_inv;
     region.AssignAdvice("value inv", config_.value_inv(), offset,
                         [&value_inv]() { return Value<F>::Known(value_inv); });
   }

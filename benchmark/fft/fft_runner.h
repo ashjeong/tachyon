@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -73,12 +74,13 @@ class FFTRunner {
 
       std::unique_ptr<F> ret;
       if constexpr (std::is_same_v<PolyOrEvals, typename Domain::Evals>) {
-        const F omega_inv = omega.Inverse();
+        const std::optional<F> omega_inv = omega.Inverse();
+        CHECK(omega_inv);
         ret.reset(reinterpret_cast<F*>(
             fn(reinterpret_cast<const tachyon_bn254_fr*>(
                    (*polys_)[i].evaluations().data()),
                (*polys_)[i].Degree(),
-               reinterpret_cast<const tachyon_bn254_fr*>(&omega_inv),
+               reinterpret_cast<const tachyon_bn254_fr*>(&*omega_inv),
                exponents[i], &duration_in_us)));
         std::vector<F> res_vec(ret.get(), ret.get() + (*polys_)[i].Degree());
         results->emplace_back(

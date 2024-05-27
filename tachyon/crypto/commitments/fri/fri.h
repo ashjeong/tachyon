@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -127,7 +128,7 @@ class FRI final
     F beta;
     F evaluation;
     F evaluation_sym;
-    F two_inv = F(2).Inverse();
+    F two_inv = *F(2).Inverse();
     for (uint32_t i = 0; i < num_layers; ++i) {
       BinaryMerkleTreeStorage<F>* layer = storage_->GetLayer(i);
       BinaryMerkleTree<F, F, MaxDegree + 1> tree(layer, hasher_);
@@ -183,7 +184,9 @@ class FRI final
       }
       beta = reader->SqueezeChallenge();
       VLOG(2) << "FRI(beta[" << i << "]): " << beta.ToHexString(true);
-      beta *= x.Inverse();
+      const std::optional<F> x_inv = x.Inverse();
+      CHECK(x_inv);
+      beta *= *x_inv;
       domain_size = domain_size >> 1;
     }
 

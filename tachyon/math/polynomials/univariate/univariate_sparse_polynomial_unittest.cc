@@ -339,8 +339,7 @@ TEST_F(UnivariateSparsePolynomialTest, DivScalar) {
   Poly actual = poly / scalar;
   Poly expected(Coeffs(std::move(expected_terms)));
   EXPECT_EQ(actual, expected);
-  poly /= scalar;
-  EXPECT_EQ(poly, expected);
+  EXPECT_EQ(poly /= scalar, expected);
 }
 
 TEST_F(UnivariateSparsePolynomialTest, FromRoots) {

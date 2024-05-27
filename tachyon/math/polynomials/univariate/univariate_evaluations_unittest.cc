@@ -245,14 +245,15 @@ TEST_F(UnivariateEvaluationsTest, DivScalar) {
   const std::vector<GF7>& evals = poly.evaluations();
   expected_evals.reserve(evals.size());
   for (size_t i = 0; i < evals.size(); ++i) {
-    expected_evals.push_back(evals[i] / scalar);
+    std::optional<GF7> div = evals[i] / scalar;
+    CHECK(div);
+    expected_evals.push_back(*div);
   }
 
   Poly actual = poly / scalar;
   Poly expected(std::move(expected_evals));
   EXPECT_EQ(actual, expected);
-  poly /= scalar;
-  EXPECT_EQ(poly, expected);
+  EXPECT_EQ(poly /= scalar, expected);
 }
 
 TEST_F(UnivariateEvaluationsTest, Copyable) {

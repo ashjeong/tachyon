@@ -1,6 +1,7 @@
 #ifndef TACHYON_MATH_ELLIPTIC_CURVES_SHORT_WEIERSTRASS_PROJECTIVE_POINT_H_
 #define TACHYON_MATH_ELLIPTIC_CURVES_SHORT_WEIERSTRASS_PROJECTIVE_POINT_H_
 
+#include <optional>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -86,13 +87,6 @@ class ProjectivePoint<
 
   constexpr static ProjectivePoint FromXYZZ(const PointXYZZ<Curve>& point) {
     return point.ToProjective();
-  }
-
-  constexpr static ProjectivePoint FromMontgomery(
-      const Point3<typename BaseField::MontgomeryTy>& point) {
-    return {BaseField::FromMontgomery(point.x),
-            BaseField::FromMontgomery(point.y),
-            BaseField::FromMontgomery(point.z)};
   }
 
   constexpr static ProjectivePoint Random() {
@@ -221,7 +215,7 @@ class ProjectivePoint<
     } else if (z_.IsOne()) {
       return {x_, y_};
     } else {
-      BaseField z_inv = z_.Inverse();
+      BaseField z_inv = *z_.Inverse();
       return {x_ * z_inv, y_ * z_inv};
     }
   }
@@ -238,10 +232,6 @@ class ProjectivePoint<
   constexpr PointXYZZ<Curve> ToXYZZ() const {
     BaseField zz = z_.Square();
     return {x_ * z_, y_ * zz, zz, z_ * zz};
-  }
-
-  constexpr Point3<typename BaseField::MontgomeryTy> ToMontgomery() const {
-    return {x_.ToMontgomery(), y_.ToMontgomery(), z_.ToMontgomery()};
   }
 
   std::string ToString() const {

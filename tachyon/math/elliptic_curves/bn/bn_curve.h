@@ -7,6 +7,7 @@
 #define TACHYON_MATH_ELLIPTIC_CURVES_BN_BN_CURVE_H_
 
 #include <functional>
+#include <optional>
 #include <vector>
 
 #include "tachyon/base/parallelize.h"
@@ -57,7 +58,7 @@ class BNCurve : public PairingFriendlyCurve<Config> {
                              std::multiplies<>());
 
     if constexpr (Config::kXIsNegative) {
-      f.CyclotomicInverseInPlace();
+      CHECK(f.CyclotomicInverseInPlace());
     }
 
     for (const Pair& pair : pairs) {
@@ -83,22 +84,24 @@ class BNCurve : public PairingFriendlyCurve<Config> {
     //   f^((q⁶ - 1) * (q² + 1)) = (conj(f) * f⁻¹)^(q² + 1)
 
     // f1 = f.CyclotomicInverse() = f^(q⁶)
-    Fp12 f1 = f.CyclotomicInverse();
+    const std::optional<Fp12> f1 = f.CyclotomicInverse();
 
     // f2 = f⁻¹
-    Fp12 f2 = f.Inverse();
+    std::optional<Fp12> f2 = f.Inverse();
+
+    CHECK(f1 && f2);
 
     // r = f^(q⁶ - 1)
-    Fp12 r = f1 * f2;
+    Fp12 r = *f1 * *f2;
 
     // f2 = f^(q⁶ - 1)
-    f2 = r;
+    *f2 = r;
     // r = f^((q⁶ - 1)(q²))
     r.FrobeniusMapInPlace(2);
 
     // r = f^((q⁶ - 1)(q²)) * f^(q⁶ - 1)
     // r = f^((q⁶ - 1)(q² + 1))
-    r *= f2;
+    r *= *f2;
 
     // Hard part follows Laura Fuentes-Castaneda et al. "Faster hashing to G2"
     // by computing:
@@ -128,9 +131,9 @@ class BNCurve : public PairingFriendlyCurve<Config> {
     // y6 = (y5)⁻ˣ = r^(-12x³)
     Fp12 y6 = Base::PowByNegX(y5);
     // y3 = (y3)⁻¹ = r^(6x)
-    y3.CyclotomicInverseInPlace();
+    CHECK(y3.CyclotomicInverseInPlace());
     // y6 = (y6)⁻¹ = r^(12x³)
-    y6.CyclotomicInverseInPlace();
+    CHECK(y6.CyclotomicInverseInPlace());
     // y7 = y6 * y4 = r^(12x³ + 6x²)
     Fp12& y7 = y6 *= y4;
     // y8 = y7 * y3 = r^(12x³ + 6x² + 6x)
@@ -153,7 +156,7 @@ class BNCurve : public PairingFriendlyCurve<Config> {
     //                     q  * (12x³ +  6x² + 4x) +
     //                     1  * (12x³ + 12x² + 6x + 1))
     Fp12& y14 = y8 *= y13;
-    r.CyclotomicInverseInPlace();
+    CHECK(r.CyclotomicInverseInPlace());
     // y15 = r⁻¹ * y9 = r^(12x³ + 6x² + 4x - 1)
     Fp12& y15 = r *= y9;
     // y15 = (y15)^q³ = r^(q³ * (12x³ + 6x² + 4x - 1))

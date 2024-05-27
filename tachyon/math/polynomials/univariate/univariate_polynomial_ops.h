@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <iterator>
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -339,12 +340,16 @@ class UnivariatePolynomialOp<UnivariateDenseCoefficients<F, MaxDegree>> {
 
   static UnivariatePolynomial<D> Div(const UnivariatePolynomial<D>& self,
                                      const F& scalar) {
-    return Mul(self, scalar.Inverse());
+    const std::optional<F> scalar_inv = scalar.Inverse();
+    CHECK(scalar_inv);
+    return Mul(self, *scalar_inv);
   }
 
   static UnivariatePolynomial<D>& DivInPlace(UnivariatePolynomial<D>& self,
                                              const F& scalar) {
-    return MulInPlace(self, scalar.Inverse());
+    const std::optional<F> scalar_inv = scalar.Inverse();
+    CHECK(scalar_inv);
+    return MulInPlace(self, *scalar_inv);
   }
 
   template <typename DOrS>
@@ -494,21 +499,22 @@ class UnivariatePolynomialOp<UnivariateDenseCoefficients<F, MaxDegree>> {
   static DivResult<UnivariatePolynomial<D>> Divide(
       const UnivariatePolynomial<D>& self,
       const UnivariatePolynomial<DOrS>& other) {
+    CHECK(!other.IsZero());
     if (self.IsZero()) {
       return {UnivariatePolynomial<D>::Zero(), other.ToDense()};
-    } else if (other.IsZero()) {
-      NOTREACHED() << "Divide by zero polynomial";
     } else if (self.Degree() < other.Degree()) {
       return {UnivariatePolynomial<D>::Zero(), self.ToDense()};
     }
     std::vector<F> quotient(self.Degree() - other.Degree() + 1);
     UnivariatePolynomial<D> remainder = self.ToDense();
     std::vector<F>& r_coefficients = remainder.coefficients_.coefficients_;
-    F divisor_leading_inv = other.GetLeadingCoefficient().Inverse();
+    // NOTE(ashjeong): |other| is guaranteed to not be 0
+    const std::optional<F> divisor_leading_inv =
+        other.GetLeadingCoefficient().Inverse();
 
     while (!remainder.IsZero() && remainder.Degree() >= other.Degree()) {
       F q_coeff =
-          remainder.coefficients_.coefficients_.back() * divisor_leading_inv;
+          remainder.coefficients_.coefficients_.back() * *divisor_leading_inv;
       size_t degree = remainder.Degree() - other.Degree();
       quotient[degree] = q_coeff;
 
@@ -687,12 +693,16 @@ class UnivariatePolynomialOp<UnivariateSparseCoefficients<F, MaxDegree>> {
 
   static UnivariatePolynomial<S> Div(const UnivariatePolynomial<S>& self,
                                      const F& scalar) {
-    return Mul(self, scalar.Inverse());
+    const std::optional<F> scalar_inv = scalar.Inverse();
+    CHECK(scalar_inv);
+    return Mul(self, *scalar_inv);
   }
 
   static UnivariatePolynomial<S>& DivInPlace(UnivariatePolynomial<S>& self,
                                              const F& scalar) {
-    return MulInPlace(self, scalar.Inverse());
+    const std::optional<F> scalar_inv = scalar.Inverse();
+    CHECK(scalar_inv);
+    return MulInPlace(self, *scalar_inv);
   }
 
   template <typename DOrS>

@@ -161,7 +161,7 @@ TEST_F(QuadraticExtensionFieldTest, MultiplicativeGroupOperators) {
   while (f.IsZero()) {
     f = GF7_2::Random();
   }
-  GF7_2 f_inv = f.Inverse();
+  GF7_2 f_inv = *f.Inverse();
   EXPECT_EQ(f * f_inv, GF7_2::One());
   GF7_2 f_tmp = f;
   f.InverseInPlace();

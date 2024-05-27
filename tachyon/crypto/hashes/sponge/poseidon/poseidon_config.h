@@ -6,6 +6,7 @@
 #ifndef TACHYON_CRYPTO_HASHES_SPONGE_POSEIDON_POSEIDON_CONFIG_H_
 #define TACHYON_CRYPTO_HASHES_SPONGE_POSEIDON_POSEIDON_CONFIG_H_
 
+#include <optional>
 #include <utility>
 
 #include "absl/types/span.h"
@@ -51,7 +52,9 @@ void FindPoseidonArkAndMds(const PoseidonGrainLFSRConfig& config,
   mds = math::Matrix<PrimeField>(config.state_len, config.state_len);
   for (Eigen::Index i = 0; i < mds.rows(); ++i) {
     for (Eigen::Index j = 0; j < mds.cols(); ++j) {
-      mds(i, j) = (xs[i] + ys[j]).Inverse();
+      const std::optional<PrimeField> inv = (xs[i] + ys[j]).Inverse();
+      CHECK(inv);
+      mds(i, j) = *inv;
     }
   }
 }

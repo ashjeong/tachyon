@@ -2,9 +2,11 @@
  * @file
  * @brief Finite field operations for the %{type} curve.
  *
- * This header file defines operations and structures for manipulating elements of the finite field %{suffix} associated with the %{type} elliptic curve. 
- * It provides fundamental arithmetic operations necessary for elliptic curve cryptography on this curve such as addition, subtraction, 
- * and multiplication of field elements.
+ * This header file defines operations and structures for manipulating elements
+ * of the finite field %{suffix} associated with the %{type} elliptic curve. It
+ * provides fundamental arithmetic operations necessary for elliptic curve
+ * cryptography on this curve such as addition, subtraction, and multiplication
+ * of field elements.
  * @example prime_field.cc
  */
 
@@ -17,7 +19,7 @@
  * @struct tachyon_%{type}_%{suffix}
  * @brief Represents an element in the finite field %{suffix} for the %{type} curve.
  *
- * This structure is used to represent an element in the finite field %{suffix}, 
+ * This structure is used to represent an element in the finite field %{suffix},
  * of the %{type} curve. It stores the element as an array of 64-bit limbs.
  */
 struct tachyon_%{type}_%{suffix} {
@@ -72,9 +74,10 @@ TACHYON_C_EXPORT tachyon_%{type}_%{suffix} tachyon_%{type}_%{suffix}_mul(const t
  * @brief Divides one element by another in the finite field %{suffix}.
  * @param a Pointer to the dividend.
  * @param b Pointer to the divisor.
- * @return The result of the division a / b in %{suffix}.
+ * @param output Pointer to the resulting quotient.
+ * @return False if the divisor is 0, true otherwise.
  */
-TACHYON_C_EXPORT tachyon_%{type}_%{suffix} tachyon_%{type}_%{suffix}_div(const tachyon_%{type}_%{suffix}* a, const tachyon_%{type}_%{suffix}* b);
+TACHYON_C_EXPORT bool tachyon_%{type}_%{suffix}_div(const tachyon_%{type}_%{suffix}* a, const tachyon_%{type}_%{suffix}* b, tachyon_%{type}_%{suffix}* output);
 
 /**
  * @brief Negates an element in the finite field %{suffix}.
@@ -100,9 +103,10 @@ TACHYON_C_EXPORT tachyon_%{type}_%{suffix} tachyon_%{type}_%{suffix}_sqr(const t
 /**
  * @brief Calculates the multiplicative inverse of an element in the finite field %{suffix}.
  * @param a Pointer to the element to invert.
- * @return The multiplicative inverse of a in %{suffix}.
+ * @param output Pointer to the output parameter.
+ * @return Bool to determine if the ivnerse vaild.
  */
-TACHYON_C_EXPORT tachyon_%{type}_%{suffix} tachyon_%{type}_%{suffix}_inv(const tachyon_%{type}_%{suffix}* a);
+TACHYON_C_EXPORT bool tachyon_%{type}_%{suffix}_inv(const tachyon_%{type}_%{suffix}* a, tachyon_%{type}_%{suffix}* output);
 
 /**
  * @brief Checks if two elements in the finite field %{suffix} are equal.
@@ -147,7 +151,8 @@ TACHYON_C_EXPORT bool tachyon_%{type}_%{suffix}_lt(const tachyon_%{type}_%{suffi
 
 /**
  * @brief Checks if one element in the finite field %{suffix} is less than or equal to another.
- * This function compares two elements `a` and `b` in the finite field %{suffix} to determine if `a` is less than or equal to `b`. It provides an essential comparison operation for cryptographic algorithms involving finite fields.
+ * This function compares two elements `a` and `b` in the finite field %{suffix} to determine if `a` is less than or equal to `b`.
+ * It provides an essential comparison operation for cryptographic algorithms involving finite fields.
  * @param a Pointer to the first element for comparison.
  * @param b Pointer to the second element for comparison.
  * @return True if `a` is less than or equal to `b`, false otherwise.

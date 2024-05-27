@@ -7,6 +7,7 @@
 #define TACHYON_MATH_POLYNOMIALS_UNIVARIATE_UNIVARIATE_EVALUATIONS_OPS_H_
 
 #include <algorithm>
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -186,12 +187,8 @@ class UnivariateEvaluationsOp {
   static Poly Div(const Poly& self, const Poly& other) {
     const std::vector<F>& l_evaluations = self.evaluations_;
     const std::vector<F>& r_evaluations = other.evaluations_;
-    if (r_evaluations.empty()) {
-      // f(x) / 0
-      // TODO(chokobole): It should return std::nullopt.
-      // See https://github.com/kroma-network/tachyon/issues/76.
-      return Poly::Zero();
-    }
+    // f(x) / 0
+    CHECK(!r_evaluations.empty());
     if (l_evaluations.empty()) {
       // 0 / g(x)
       return self;
@@ -199,7 +196,9 @@ class UnivariateEvaluationsOp {
     CHECK_EQ(l_evaluations.size(), r_evaluations.size());
     std::vector<F> o_evaluations(r_evaluations.size());
     OPENMP_PARALLEL_FOR(size_t i = 0; i < r_evaluations.size(); ++i) {
-      o_evaluations[i] = l_evaluations[i] / r_evaluations[i];
+      std::optional<F> div = l_evaluations[i] / r_evaluations[i];
+      CHECK(div);
+      o_evaluations[i] = *div;
     }
     return Poly(std::move(o_evaluations));
   }
@@ -207,12 +206,8 @@ class UnivariateEvaluationsOp {
   static Poly& DivInPlace(Poly& self, const Poly& other) {
     std::vector<F>& l_evaluations = self.evaluations_;
     const std::vector<F>& r_evaluations = other.evaluations_;
-    if (r_evaluations.empty()) {
-      // f(x) / 0
-      // TODO(chokobole): It should return std::nullopt.
-      // See https://github.com/kroma-network/tachyon/issues/76.
-      return self;
-    }
+    // f(x) / 0
+    CHECK(!r_evaluations.empty());
     if (l_evaluations.empty()) {
       // 0 / g(x)
       return self;
@@ -225,11 +220,15 @@ class UnivariateEvaluationsOp {
   }
 
   static Poly Div(const Poly& self, const F& scalar) {
-    return Mul(self, scalar.Inverse());
+    const std::optional<F> scalar_inv = scalar.Inverse();
+    CHECK(scalar_inv);
+    return Mul(self, *scalar_inv);
   }
 
   static Poly& DivInPlace(Poly& self, const F& scalar) {
-    return MulInPlace(self, scalar.Inverse());
+    const std::optional<F> scalar_inv = scalar.Inverse();
+    CHECK(scalar_inv);
+    return MulInPlace(self, *scalar_inv);
   }
 };
 

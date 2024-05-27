@@ -8,6 +8,7 @@
 
 #include <stddef.h>
 
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -60,8 +61,11 @@ class VerifyingKey : public Key {
   template <size_t MaxDegree>
   [[nodiscard]] bool Load(const ToxicWaste<Curve>& toxic_waste,
                           KeyPreLoadResult<G1Point, MaxDegree>& result) {
-    F gamma_inverse = toxic_waste.gamma().Inverse();
-    return Load(toxic_waste, result, gamma_inverse);
+    const std::optional<F> gamma_inverse = toxic_waste.gamma().Inverse();
+    if (UNLIKELY(!gamma_inverse)) {
+      return false;
+    }
+    return Load(toxic_waste, result, *gamma_inverse);
   }
 
   template <size_t MaxDegree>

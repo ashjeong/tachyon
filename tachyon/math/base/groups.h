@@ -2,12 +2,14 @@
 #define TACHYON_MATH_BASE_GROUPS_H_
 
 #include <limits>
+#include <optional>
 #include <ostream>
 #include <tuple>
 #include <utility>
 #include <vector>
 
 #include "tachyon/base/containers/container_util.h"
+#include "tachyon/base/logging.h"
 #include "tachyon/base/openmp_util.h"
 #include "tachyon/base/types/always_false.h"
 #include "tachyon/math/base/semigroups.h"
@@ -37,17 +39,22 @@ class MultiplicativeGroup : public MultiplicativeSemigroup<G> {
 
   // Division: a * b⁻¹
   template <typename G2>
-  constexpr auto operator/(const G2& other) const {
-    return this->operator*(other.Inverse());
+  constexpr std::optional<G> operator/(const G2& other) const {
+    const std::optional<G2> other_inv = other.Inverse();
+    const G* g = static_cast<const G*>(this);
+    if (UNLIKELY(!other_inv)) return std::nullopt;
+    return g->Mul(*other_inv);
   }
 
   // Division in place: a *= b⁻¹
   template <
       typename G2,
       std::enable_if_t<internal::SupportsMulInPlace<G, G2>::value>* = nullptr>
-  constexpr G& operator/=(const G2& other) {
+  constexpr std::optional<G*> operator/=(const G2& other) {
+    const std::optional<G2> other_inv = other.Inverse();
     G* g = static_cast<G*>(this);
-    return g->MulInPlace(other.Inverse());
+    if (UNLIKELY(!other_inv)) return std::nullopt;
+    return &g->MulInPlace(*other_inv);
   }
 
   template <typename Container>
@@ -76,7 +83,7 @@ class MultiplicativeGroup : public MultiplicativeSemigroup<G> {
     }
 
 #if defined(TACHYON_HAS_OPENMP)
-    using G2 = decltype(std::declval<G>().Inverse());
+    using G2 = decltype(*std::declval<G>().Inverse());
     size_t thread_nums = static_cast<size_t>(omp_get_max_threads());
     if (size >=
         size_t{1} << (thread_nums / kParallelBatchInverseDivisorThreshold)) {
@@ -88,13 +95,12 @@ class MultiplicativeGroup : public MultiplicativeSemigroup<G> {
                                          len);
         absl::Span<G2> inverses_chunk(std::data(*inverses) + i * chunk_size,
                                       len);
-        DoBatchInverse(groups_chunk, inverses_chunk, coeff);
+        if (!DoBatchInverse(groups_chunk, inverses_chunk, coeff)) return false;
       }
       return true;
     }
 #endif
-    DoBatchInverse(groups, absl::MakeSpan(*inverses), coeff);
-    return true;
+    return DoBatchInverse(groups, absl::MakeSpan(*inverses), coeff);
   }
 
   template <typename InputContainer, typename OutputContainer>
@@ -105,12 +111,11 @@ class MultiplicativeGroup : public MultiplicativeSemigroup<G> {
       LOG(ERROR) << "Size of |groups| and |inverses| do not match";
       return false;
     }
-    DoBatchInverse(groups, absl::MakeSpan(*inverses), coeff);
-    return true;
+    return DoBatchInverse(groups, absl::MakeSpan(*inverses), coeff);
   }
 
  private:
-  constexpr static void DoBatchInverse(absl::Span<const G> groups,
+  constexpr static bool DoBatchInverse(absl::Span<const G> groups,
                                        absl::Span<G> inverses, const G& coeff) {
     // Montgomery’s Trick and Fast Implementation of Masked AES
     // Genelle, Prouff and Quisquater
@@ -132,12 +137,16 @@ class MultiplicativeGroup : public MultiplicativeSemigroup<G> {
 
     // Invert |product|.
     // (a₁ * a₂ * ... *  aₙ)⁻¹
-    G product_inv = product.Inverse();
+    std::optional<G> product_inv = product.Inverse();
+    if (UNLIKELY(!product_inv)) {
+      LOG(ERROR) << "Inverse of zero attempted";
+      return false;
+    }
 
     // Multiply |product_inv| by |coeff|, so all inverses will be scaled by
     // |coeff|.
     // c * (a₁ * a₂ * ... *  aₙ)⁻¹
-    if (!coeff.IsOne()) product_inv *= coeff;
+    if (!coeff.IsOne()) *product_inv *= coeff;
 
     // Second pass: iterate backwards to compute inverses.
     //              [c * a₁⁻¹, c * a₂,⁻¹ ..., c * aₙ⁻¹]
@@ -148,14 +157,15 @@ class MultiplicativeGroup : public MultiplicativeSemigroup<G> {
       const G& g = groups[i];
       if (!g.IsZero()) {
         // c * (a₁ * a₂ * ... *  aᵢ)⁻¹ * aᵢ = c * (a₁ * a₂ * ... *  aᵢ₋₁)⁻¹
-        G new_product_inv = product_inv * g;
+        G new_product_inv = *product_inv * g;
         // v = c * (a₁ * a₂ * ... *  aᵢ)⁻¹ * (a₁ * a₂ * ... aᵢ₋₁) = c * aᵢ⁻¹
-        inverses[i] = product_inv * (*(prod_it++));
-        product_inv = std::move(new_product_inv);
+        inverses[i] = *product_inv * (*(prod_it++));
+        *product_inv = std::move(new_product_inv);
       } else {
         inverses[i] = G::Zero();
       }
     }
+    return true;
   }
 };
 

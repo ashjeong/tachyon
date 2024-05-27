@@ -1,6 +1,7 @@
 #ifndef TACHYON_MATH_BASE_RATIONAL_FIELD_H_
 #define TACHYON_MATH_BASE_RATIONAL_FIELD_H_
 
+#include <optional>
 #include <string>
 #include <utility>
 
@@ -100,7 +101,11 @@ class RationalField : public Field<RationalField<F>> {
     return numerator_ * other.denominator_ >= other.numerator_ * denominator_;
   }
 
-  F Evaluate() const { return numerator_ / denominator_; }
+  F Evaluate() const {
+    std::optional<F> div = numerator_ / denominator_;
+    CHECK(div);
+    return *div;
+  }
 
   // AdditiveSemigroup methods
   constexpr RationalField Add(const RationalField& other) const {
@@ -166,11 +171,15 @@ class RationalField : public Field<RationalField<F>> {
   }
 
   // MultiplicativeGroup methods
-  constexpr RationalField Inverse() const { return {denominator_, numerator_}; }
+  constexpr std::optional<RationalField> Inverse() const {
+    if (IsZero()) return std::nullopt;
+    return RationalField(denominator_, numerator_);
+  }
 
-  constexpr RationalField& InverseInPlace() {
+  constexpr std::optional<RationalField*> InverseInPlace() {
+    if (IsZero()) return std::nullopt;
     std::swap(numerator_, denominator_);
-    return *this;
+    return this;
   }
 
  private:

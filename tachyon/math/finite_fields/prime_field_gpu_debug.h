@@ -8,7 +8,7 @@
 #include <string>
 #include <utility>
 
-#include "tachyon/base/random.h"
+#include "tachyon/base/logging.h"
 #include "tachyon/math/base/arithmetics.h"
 #include "tachyon/math/base/big_int.h"
 #include "tachyon/math/base/gmp/gmp_util.h"
@@ -33,7 +33,6 @@ class PrimeFieldGpuDebug final
 
   using Config = _Config;
   using BigIntTy = BigInt<N>;
-  using MontgomeryTy = BigInt<N>;
   using value_type = BigInt<N>;
 
   using CpuField = PrimeFieldGpuDebug<Config>;
@@ -47,7 +46,7 @@ class PrimeFieldGpuDebug final
   constexpr explicit PrimeFieldGpuDebug(const BigInt<N>& value) {
     DCHECK_LT(value, Config::kModulus);
     PrimeField<Config> p(value);
-    value_ = p.ToMontgomery();
+    value_ = p.value();
   }
   constexpr PrimeFieldGpuDebug(const PrimeFieldGpuDebug& other) = default;
   constexpr PrimeFieldGpuDebug& operator=(const PrimeFieldGpuDebug& other) =
@@ -65,7 +64,7 @@ class PrimeFieldGpuDebug final
 
   static PrimeFieldGpuDebug Random() {
     PrimeFieldGpuDebug ret;
-    ret.value_ = PrimeField<Config>::Random().ToMontgomery();
+    ret.value_ = PrimeField<Config>::Random().value();
     return ret;
   }
 
@@ -94,7 +93,7 @@ class PrimeFieldGpuDebug final
     return PrimeFieldGpuDebug(big_int);
   }
 
-  constexpr static PrimeFieldGpuDebug FromMontgomery(const MontgomeryTy& mont) {
+  constexpr static PrimeFieldGpuDebug FromMontgomery(const BigInt<N>& mont) {
     PrimeFieldGpuDebug ret;
     ret.value_ = mont;
     return ret;
@@ -141,8 +140,6 @@ class PrimeFieldGpuDebug final
     return BigInt<N>::FromMontgomery64(value_, Config::kModulus,
                                        Config::kInverse64);
   }
-
-  constexpr const BigInt<N>& ToMontgomery() const { return value_; }
 
   constexpr uint64_t& operator[](size_t i) { return value_[i]; }
   constexpr const uint64_t& operator[](size_t i) const { return value_[i]; }
@@ -236,15 +233,15 @@ class PrimeFieldGpuDebug final
 
   // MultiplicativeGroup methods
   // TODO(chokobole): Share codes with PrimeField and PrimeFieldGpu.
-  constexpr PrimeFieldGpuDebug Inverse() const {
+  constexpr std::optional<PrimeFieldGpuDebug> Inverse() const {
     PrimeFieldGpuDebug ret;
-    DoInverse(*this, ret);
+    if (UNLIKELY(!DoInverse(*this, ret))) return std::nullopt;
     return ret;
   }
 
-  constexpr PrimeFieldGpuDebug& InverseInPlace() {
-    DoInverse(*this, *this);
-    return *this;
+  constexpr std::optional<PrimeFieldGpuDebug*> InverseInPlace() {
+    if (UNLIKELY(!DoInverse(*this, *this))) return std::nullopt;
+    return this;
   }
 
  private:
@@ -388,9 +385,12 @@ class PrimeFieldGpuDebug final
                : results;
   }
 
-  constexpr static void DoInverse(const PrimeFieldGpuDebug& a,
-                                  PrimeFieldGpuDebug& b) {
-    CHECK(!a.IsZero());
+  [[nodiscard]] constexpr static bool DoInverse(const PrimeFieldGpuDebug& a,
+                                                PrimeFieldGpuDebug& b) {
+    if (UNLIKELY(!a.IsZero())) {
+      LOG(ERROR) << "Inverse of zero attempted";
+      return false;
+    }
 
     BigInt<N> u = a.value_;
     BigInt<N> v = Config::kModulus;
@@ -423,6 +423,7 @@ class PrimeFieldGpuDebug final
     } else {
       b = d;
     }
+    return true;
   }
 
   BigInt<N> value_;

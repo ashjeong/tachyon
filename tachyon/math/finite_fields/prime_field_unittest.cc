@@ -1,3 +1,5 @@
+#include <optional>
+
 #include "gtest/gtest.h"
 
 #include "tachyon/base/buffer/vector_buffer.h"
@@ -51,11 +53,7 @@ TYPED_TEST(PrimeFieldTest, One) {
 
   EXPECT_TRUE(F::One().IsOne());
   EXPECT_FALSE(F::Zero().IsOne());
-  if constexpr (F::Config::kUseMontgomery) {
-    EXPECT_EQ(F::Config::kOne, F(1).ToMontgomery());
-  } else {
-    EXPECT_EQ(F::Config::kOne, F(1).ToBigInt());
-  }
+  EXPECT_EQ(F::Config::kOne, F(1).value());
 }
 
 TYPED_TEST(PrimeFieldTest, BigIntConversion) {
@@ -63,20 +61,6 @@ TYPED_TEST(PrimeFieldTest, BigIntConversion) {
 
   F r = F::Random();
   EXPECT_EQ(F::FromBigInt(r.ToBigInt()), r);
-}
-
-TYPED_TEST(PrimeFieldTest, MontgomeryConversion) {
-  using F = TypeParam;
-
-  F r = F::Random();
-  EXPECT_EQ(F::FromMontgomery(r.ToMontgomery()), r);
-}
-
-TYPED_TEST(PrimeFieldTest, MpzClassConversion) {
-  using F = TypeParam;
-
-  F r = F::Random();
-  EXPECT_EQ(F::FromMpzClass(r.ToMpzClass()), r);
 }
 
 TYPED_TEST(PrimeFieldTest, EqualityOperators) {
@@ -174,7 +158,11 @@ TYPED_TEST(PrimeFieldTest, MultiplicativeGroupOperators) {
 
   for (int i = 1; i < 7; ++i) {
     F f(i);
-    EXPECT_EQ(f * f.Inverse(), F::One());
+    const std::optional<F> f_inv = f.Inverse();
+    if (UNLIKELY(!f_inv)) {
+      continue;
+    }
+    EXPECT_EQ(f * *f_inv, F::One());
     F f_tmp = f;
     f.InverseInPlace();
     EXPECT_EQ(f * f_tmp, F::One());

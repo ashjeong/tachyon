@@ -15,9 +15,12 @@ def _do_generate_prime_field_impl(ctx, type):
     x86_hdr_tpl_path = ctx.expand_location("$(location @kroma_network_tachyon//tachyon/math/finite_fields/generator/prime_field_generator:prime_field_x86.h.tpl)", [ctx.attr.x86_hdr_tpl])
     fail_hdr_tpl_path = ctx.expand_location("$(location @kroma_network_tachyon//tachyon/math/finite_fields/generator/prime_field_generator:fail.h.tpl)", [ctx.attr.fail_hdr_tpl])
     fail_src_tpl_path = ctx.expand_location("$(location @kroma_network_tachyon//tachyon/math/finite_fields/generator/prime_field_generator:fail.cc.tpl)", [ctx.attr.fail_src_tpl])
-    config_hdr_tpl_path = ctx.expand_location("$(location @kroma_network_tachyon//tachyon/math/finite_fields/generator/prime_field_generator:config.h.tpl)", [ctx.attr.config_hdr_tpl])
-    cpu_hdr_tpl_path = ctx.expand_location("$(location @kroma_network_tachyon//tachyon/math/finite_fields/generator/prime_field_generator:cpu.h.tpl)", [ctx.attr.cpu_hdr_tpl])
-    gpu_hdr_tpl_path = ctx.expand_location("$(location @kroma_network_tachyon//tachyon/math/finite_fields/generator/prime_field_generator:gpu.h.tpl)", [ctx.attr.gpu_hdr_tpl])
+    config_hdr_tpl_path = ctx.expand_location("$(location @kroma_network_tachyon//tachyon/math/finite_fields/generator/prime_field_generator:prime_field_config.h.tpl)", [ctx.attr.config_hdr_tpl])
+    small_config_hdr_tpl_path = ctx.expand_location("$(location @kroma_network_tachyon//tachyon/math/finite_fields/generator/prime_field_generator:small_prime_field_config.h.tpl)", [ctx.attr.small_config_hdr_tpl])
+    cpu_hdr_tpl_path = ctx.expand_location("$(location @kroma_network_tachyon//tachyon/math/finite_fields/generator/prime_field_generator:prime_field_cpu.h.tpl)", [ctx.attr.cpu_hdr_tpl])
+    small_cpu_hdr_tpl_path = ctx.expand_location("$(location @kroma_network_tachyon//tachyon/math/finite_fields/generator/prime_field_generator:small_prime_field_cpu.h.tpl)", [ctx.attr.small_cpu_hdr_tpl])
+    gpu_hdr_tpl_path = ctx.expand_location("$(location @kroma_network_tachyon//tachyon/math/finite_fields/generator/prime_field_generator:prime_field_gpu.h.tpl)", [ctx.attr.gpu_hdr_tpl])
+    small_gpu_hdr_tpl_path = ctx.expand_location("$(location @kroma_network_tachyon//tachyon/math/finite_fields/generator/prime_field_generator:small_prime_field_gpu.h.tpl)", [ctx.attr.small_gpu_hdr_tpl])
 
     arguments = [
         "--out=%s" % (ctx.outputs.out.path),
@@ -29,8 +32,11 @@ def _do_generate_prime_field_impl(ctx, type):
         "--fail_hdr_tpl_path=%s" % (fail_hdr_tpl_path),
         "--fail_src_tpl_path=%s" % (fail_src_tpl_path),
         "--config_hdr_tpl_path=%s" % (config_hdr_tpl_path),
+        "--small_config_hdr_tpl_path=%s" % (small_config_hdr_tpl_path),
         "--cpu_hdr_tpl_path=%s" % (cpu_hdr_tpl_path),
+        "--small_cpu_hdr_tpl_path=%s" % (small_cpu_hdr_tpl_path),
         "--gpu_hdr_tpl_path=%s" % (gpu_hdr_tpl_path),
+        "--small_gpu_hdr_tpl_path=%s" % (small_gpu_hdr_tpl_path),
     ]
 
     if ctx.attr.use_asm:
@@ -59,8 +65,11 @@ def _do_generate_prime_field_impl(ctx, type):
             ctx.files.fail_hdr_tpl[0],
             ctx.files.fail_src_tpl[0],
             ctx.files.config_hdr_tpl[0],
+            ctx.files.small_config_hdr_tpl[0],
             ctx.files.cpu_hdr_tpl[0],
+            ctx.files.small_cpu_hdr_tpl[0],
             ctx.files.gpu_hdr_tpl[0],
+            ctx.files.small_gpu_hdr_tpl[0],
         ],
         tools = [ctx.executable._tool],
         executable = ctx.executable._tool,
@@ -104,15 +113,27 @@ def _attrs(type):
         ),
         "config_hdr_tpl": attr.label(
             allow_single_file = True,
-            default = Label("@kroma_network_tachyon//tachyon/math/finite_fields/generator/prime_field_generator:config.h.tpl"),
+            default = Label("@kroma_network_tachyon//tachyon/math/finite_fields/generator/prime_field_generator:prime_field_config.h.tpl"),
+        ),
+        "small_config_hdr_tpl": attr.label(
+            allow_single_file = True,
+            default = Label("@kroma_network_tachyon//tachyon/math/finite_fields/generator/prime_field_generator:small_prime_field_config.h.tpl"),
         ),
         "cpu_hdr_tpl": attr.label(
             allow_single_file = True,
-            default = Label("@kroma_network_tachyon//tachyon/math/finite_fields/generator/prime_field_generator:cpu.h.tpl"),
+            default = Label("@kroma_network_tachyon//tachyon/math/finite_fields/generator/prime_field_generator:prime_field_cpu.h.tpl"),
+        ),
+        "small_cpu_hdr_tpl": attr.label(
+            allow_single_file = True,
+            default = Label("@kroma_network_tachyon//tachyon/math/finite_fields/generator/prime_field_generator:small_prime_field_cpu.h.tpl"),
         ),
         "gpu_hdr_tpl": attr.label(
             allow_single_file = True,
-            default = Label("@kroma_network_tachyon//tachyon/math/finite_fields/generator/prime_field_generator:gpu.h.tpl"),
+            default = Label("@kroma_network_tachyon//tachyon/math/finite_fields/generator/prime_field_generator:prime_field_gpu.h.tpl"),
+        ),
+        "small_gpu_hdr_tpl": attr.label(
+            allow_single_file = True,
+            default = Label("@kroma_network_tachyon//tachyon/math/finite_fields/generator/prime_field_generator:small_prime_field_gpu.h.tpl"),
         ),
         "_has_asm_prime_field": attr.label(
             default = Label("@kroma_network_tachyon//:has_asm_prime_field"),
@@ -161,28 +182,33 @@ def _do_generate_prime_fields(
         use_asm,
         use_montgomery,
         **kwargs):
+    is_small_prime_field = int(modulus) < 1 << 32
+
+    config_deps = [
+        "//tachyon:export",
+        "//tachyon/build:build_config",
+    ]
+    if not is_small_prime_field:
+        config_deps.append("//tachyon/math/base:big_int")
+
     tachyon_cc_library(
         name = "{}_config".format(name),
         hdrs = [":{}_gen_config_hdr".format(name)],
-        deps = [
-            "//tachyon:export",
-            "//tachyon/build:build_config",
-            "//tachyon/math/base:big_int",
-        ],
+        deps = config_deps,
     )
 
-    if int(modulus) < 1 << 32:
+    if is_small_prime_field:
         if use_montgomery:
-            small_prime_field = "//tachyon/math/finite_fields:small_prime_field_mont"
+            small_prime_field_dep = "//tachyon/math/finite_fields:small_prime_field_mont"
         else:
-            small_prime_field = "//tachyon/math/finite_fields:small_prime_field"
+            small_prime_field_dep = "//tachyon/math/finite_fields:small_prime_field"
 
         tachyon_cc_library(
             name = name,
             hdrs = [":{}_gen_hdr".format(name)],
             deps = [
                 ":{}_config".format(name),
-                small_prime_field,
+                small_prime_field_dep,
             ],
             **kwargs
         )
@@ -302,7 +328,7 @@ def _do_generate_prime_fields(
         hdrs = [":{}_gen_gpu_hdr".format(name)],
         deps = [
             ":{}_config".format(name),
-            "//tachyon/math/finite_fields:prime_field_gpu",
+            small_prime_field_dep if is_small_prime_field else "//tachyon/math/finite_fields:prime_field_gpu",
         ],
         **kwargs
     )

@@ -67,12 +67,14 @@ struct UnivariateTerm {
   }
 
   UnivariateTerm operator/(const F& scalar) const {
-    return {degree, coefficient / scalar};
+    std::optional<F> div = coefficient / scalar;
+    CHECK(div);
+    return UnivariateTerm{degree, *div};
   }
 
-  UnivariateTerm& operator/=(const F& scalar) {
-    coefficient /= scalar;
-    return *this;
+  UnivariateTerm operator/=(const F& scalar) {
+    CHECK(coefficient /= scalar);
+    return this;
   }
 
   bool operator<(const UnivariateTerm& other) const {

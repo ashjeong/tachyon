@@ -162,7 +162,10 @@ TEST_F(RationalFieldTest, MultiplicativeOperators) {
 
 TEST_F(RationalFieldTest, MultiplicativeGroupOperators) {
   R r = R::Random();
-  EXPECT_TRUE((r * r.Inverse()).IsOne());
+  while (r.IsZero()) {
+    r = R::Random();
+  }
+  EXPECT_TRUE((r * *r.Inverse()).IsOne());
   R r_tmp = r;
   r.InverseInPlace();
   EXPECT_TRUE((r * r_tmp).IsOne());

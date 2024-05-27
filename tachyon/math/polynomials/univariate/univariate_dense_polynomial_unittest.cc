@@ -1,3 +1,5 @@
+#include <optional>
+
 #include "absl/hash/hash_testing.h"
 #include "gtest/gtest.h"
 
@@ -301,14 +303,15 @@ TEST_F(UnivariateDensePolynomialTest, DivScalar) {
   const std::vector<GF7>& coeffs = poly.coefficients().coefficients();
   expected_coeffs.reserve(coeffs.size());
   for (size_t i = 0; i < coeffs.size(); ++i) {
-    expected_coeffs.push_back(coeffs[i] / scalar);
+    std::optional<GF7> div = coeffs[i] / scalar;
+    CHECK(div);
+    expected_coeffs.push_back(*div);
   }
 
   Poly actual = poly / scalar;
   Poly expected(Coeffs(std::move(expected_coeffs)));
   EXPECT_EQ(actual, expected);
-  poly /= scalar;
-  EXPECT_EQ(poly, expected);
+  EXPECT_EQ(poly /= scalar, expected);
 }
 
 TEST_F(UnivariateDensePolynomialTest, FromRoots) {

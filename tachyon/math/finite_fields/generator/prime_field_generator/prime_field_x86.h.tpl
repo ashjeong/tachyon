@@ -35,7 +35,6 @@ class PrimeField<_Config, std::enable_if_t<_Config::%{flag}>> final
 
   using Config = _Config;
   using BigIntTy = BigInt<N>;
-  using MontgomeryTy = BigInt<N>;
   using value_type = BigInt<N>;
 
   using CpuField = PrimeField<Config>;
@@ -129,8 +128,6 @@ class PrimeField<_Config, std::enable_if_t<_Config::%{flag}>> final
     return ret;
   }
 
-  constexpr const BigInt<N>& ToMontgomery() const { return value_; }
-
   constexpr uint64_t& operator[](size_t i) { return value_[i]; }
   constexpr const uint64_t& operator[](size_t i) const { return value_[i]; }
 
@@ -218,17 +215,19 @@ class PrimeField<_Config, std::enable_if_t<_Config::%{flag}>> final
   }
 
   // MultiplicativeGroup methods
-  constexpr PrimeField Inverse() const {
+  constexpr std::optional<PrimeField> Inverse() const {
     PrimeField ret;
-    ret.value_ = value_.template MontgomeryInverse<Config::kModulusHasSpareBit>(
-        Config::kModulus, Config::kMontgomeryR2);
+    if (UNLIKELY(!value_.template MontgomeryInverse<Config::kModulusHasSpareBit>(
+            Config::kModulus, Config::kMontgomeryR2, ret.value_)))
+      return std::nullopt;
     return ret;
   }
 
-  constexpr PrimeField& InverseInPlace() {
-    value_ = value_.template MontgomeryInverse<Config::kModulusHasSpareBit>(
-        Config::kModulus, Config::kMontgomeryR2);
-    return *this;
+  constexpr std::optional<PrimeField*> InverseInPlace() {
+    if (UNLIKELY(!value_.template MontgomeryInverse<Config::kModulusHasSpareBit>(
+            Config::kModulus, Config::kMontgomeryR2, value_)))
+      return std::nullopt;
+    return this;
   }
 
  private:

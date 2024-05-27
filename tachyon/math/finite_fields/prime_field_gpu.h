@@ -38,7 +38,6 @@ class PrimeFieldGpu final : public PrimeFieldBase<PrimeFieldGpu<_Config>> {
 
   using Config = _Config;
   using BigIntTy = BigInt<N>;
-  using MontgomeryTy = BigInt<N>;
   using value_type = BigInt<N>;
 
   using CpuField = PrimeField<Config>;
@@ -95,7 +94,7 @@ class PrimeFieldGpu final : public PrimeFieldBase<PrimeFieldGpu<_Config>> {
     return PrimeFieldGpu(big_int);
   }
 
-  constexpr static PrimeFieldGpu FromMontgomery(const MontgomeryTy& mont) {
+  constexpr static PrimeFieldGpu FromMontgomery(const BigInt<N>& mont) {
     PrimeFieldGpu ret;
     ret.value_ = mont;
     return ret;
@@ -109,29 +108,20 @@ class PrimeFieldGpu final : public PrimeFieldBase<PrimeFieldGpu<_Config>> {
 
   static void Init() { VLOG(1) << Config::kName << " initialized"; }
 
-  __host__ __device__ const value_type& value() const { return value_; }
-  __host__ __device__ size_t GetLimbSize() const { return N; }
+  constexpr const value_type& value() const { return value_; }
+  constexpr size_t GetLimbSize() const { return N; }
 
-  __device__ constexpr bool IsZero() const {
+  constexpr bool IsZero() const {
     const uint64_t* x = value_.limbs;
     uint64_t limbs_or = x[0];
     for (size_t i = 1; i < N; ++i) limbs_or |= x[i];
     return limbs_or == 0;
   }
 
-  __device__ constexpr bool IsOne() const {
+  constexpr bool IsOne() const {
     BigInt<N> one = GetOne();
     for (size_t i = 0; i < N; ++i) {
       if (value_[i] != one[i]) return false;
-    }
-    return true;
-  }
-
-  constexpr bool IsZeroHost() const { return value_.IsZero(); }
-
-  constexpr bool IsOneHost() const {
-    for (size_t i = 0; i < N; ++i) {
-      if (value_[i] != Config::kOne[i]) return false;
     }
     return true;
   }
@@ -159,8 +149,6 @@ class PrimeFieldGpu final : public PrimeFieldBase<PrimeFieldGpu<_Config>> {
     return BigInt<N>::FromMontgomery64(value_, Config::kModulus,
                                        Config::kInverse64);
   }
-
-  constexpr const BigInt<N>& ToMontgomery() const { return value_; }
 
   // This is needed by MSM.
   // See
@@ -275,15 +263,15 @@ class PrimeFieldGpu final : public PrimeFieldBase<PrimeFieldGpu<_Config>> {
   }
 
   // MultiplicativeGroup methods
-  __device__ constexpr PrimeFieldGpu Inverse() const {
+  __device__ constexpr std::optional<PrimeFieldGpu> Inverse() const {
     PrimeFieldGpu ret;
-    DoInverse(*this, ret);
+    if (UNLIKELY(!DoInverse(*this, ret))) return std::nullopt;
     return ret;
   }
 
-  __device__ constexpr PrimeFieldGpu& InverseInPlace() {
-    DoInverse(*this, *this);
-    return *this;
+  __device__ constexpr std::optional<PrimeFieldGpu*> InverseInPlace() {
+    if (UNLIKELY(!DoInverse(*this, *this))) return std::nullopt;
+    return this;
   }
 
  private:
@@ -425,9 +413,12 @@ class PrimeFieldGpu final : public PrimeFieldBase<PrimeFieldGpu<_Config>> {
                                                                    : results;
   }
 
-  __device__ constexpr static void DoInverse(const PrimeFieldGpu& a,
-                                             PrimeFieldGpu& b) {
-    if (a.IsZero()) return;
+  [[nodiscard]] __device__ constexpr static bool DoInverse(
+      const PrimeFieldGpu& a, PrimeFieldGpu& b) {
+    if (UNLIKELY(a.IsZero())) {
+      LOG(ERROR) << "Inverse of zero attempted";
+      return false;
+    }
 
     BigInt<N> u = a.value_;
     BigInt<N> v = GetModulus();
@@ -463,6 +454,7 @@ class PrimeFieldGpu final : public PrimeFieldBase<PrimeFieldGpu<_Config>> {
     } else {
       b = d;
     }
+    return true;
   }
 
   BigInt<N> value_;

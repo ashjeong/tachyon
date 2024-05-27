@@ -2,6 +2,8 @@
 
 #include "tachyon/math/finite_fields/goldilocks/goldilocks_prime_field_x86_special.h"
 
+#include <optional>
+
 #include "third_party/goldilocks/include/goldilocks_base_field.hpp"
 
 #include "tachyon/base/random.h"
@@ -60,23 +62,19 @@ std::optional<CLASS> CLASS::FromHexString(std::string_view str) {
 
 // static
 template <typename Config>
-CLASS CLASS::FromBigInt(const BigInt<N>& big_int) {
+CLASS CLASS::FromBigInt(BigInt<N> big_int) {
   return PrimeField(big_int[0]);
 }
 
+#if USE_MONTGOMERY == 1
 // static
 template <typename Config>
-CLASS CLASS::FromMontgomery(const BigInt<N>& big_int) {
+CLASS CLASS::FromMontgomery(BigInt<N> big_int) {
   PrimeField ret;
-  // See
-  // https://github.com/0xPolygonHermez/goldilocks/blob/f89eb016830f8c4301482d83691aed22e5a92742/src/goldilocks_base_field_tools.hpp#L66-L73.
-#if USE_MONTGOMERY == 1
   ret.value_ = big_int[0];
-#else
-  ret.value_ = ::Goldilocks::from_montgomery(big_int[0]);
-#endif
   return ret;
 }
+#endif
 
 template <typename Config>
 bool CLASS::IsZero() const {
@@ -106,23 +104,12 @@ std::string CLASS::ToHexString(bool pad_zero) const {
   return base::MaybePrepend0x(str);
 }
 
-template <typename Config>
-mpz_class CLASS::ToMpzClass() const {
-  mpz_class ret;
-  uint64_t limbs[] = {uint64_t{*this}};
-  gmp::WriteLimbs(limbs, N, &ret);
-  return ret;
-}
-
+#if USE_MONTGOMERY == 1
 template <typename Config>
 BigInt<CLASS::N> CLASS::ToMontgomery() const {
   return BigInt<N>(::Goldilocks::to_montgomery(uint64_t{*this}));
 }
-
-template <typename Config>
-CLASS::operator uint64_t() const {
-  return ::Goldilocks::toU64(::Goldilocks::Element{value_});
-}
+#endif
 
 template <typename Config>
 CLASS CLASS::Add(const PrimeField& other) const {
@@ -212,9 +199,8 @@ CLASS& CLASS::SquareImplInPlace() {
 }
 
 template <typename Config>
-CLASS CLASS::Inverse() const {
-  // See https://github.com/kroma-network/tachyon/issues/76
-  CHECK(!IsZero());
+std::optional<CLASS> CLASS::Inverse() const {
+  if (UNLIKELY(IsZero())) return std::nullopt;
   PrimeField ret;
   ::Goldilocks::inv(reinterpret_cast<::Goldilocks::Element&>(ret.value_),
                     reinterpret_cast<const ::Goldilocks::Element&>(value_));
@@ -222,12 +208,11 @@ CLASS CLASS::Inverse() const {
 }
 
 template <typename Config>
-CLASS& CLASS::InverseInPlace() {
-  // See https://github.com/kroma-network/tachyon/issues/76
-  CHECK(!IsZero());
+std::optional<CLASS*> CLASS::InverseInPlace() {
+  if (UNLIKELY(IsZero())) return std::nullopt;
   ::Goldilocks::inv(reinterpret_cast<::Goldilocks::Element&>(value_),
                     reinterpret_cast<const ::Goldilocks::Element&>(value_));
-  return *this;
+  return this;
 }
 
 #undef CLASS
