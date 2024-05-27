@@ -74,9 +74,10 @@ TACHYON_C_EXPORT tachyon_%{type}_%{suffix} tachyon_%{type}_%{suffix}_mul(const t
  * @brief Divides one element by another in the finite field %{suffix}.
  * @param a Pointer to the dividend.
  * @param b Pointer to the divisor.
- * @return The result of the division a / b in %{suffix}.
+ * @param output Pointer to the resulting quotient.
+ * @return False if the divisor is 0, true otherwise.
  */
-TACHYON_C_EXPORT tachyon_%{type}_%{suffix} tachyon_%{type}_%{suffix}_div(const tachyon_%{type}_%{suffix}* a, const tachyon_%{type}_%{suffix}* b);
+TACHYON_C_EXPORT bool tachyon_%{type}_%{suffix}_div(const tachyon_%{type}_%{suffix}* a, const tachyon_%{type}_%{suffix}* b, tachyon_%{type}_%{suffix}* output);
 
 /**
  * @brief Negates an element in the finite field %{suffix}.

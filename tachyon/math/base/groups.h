@@ -39,12 +39,10 @@ class MultiplicativeGroup : public MultiplicativeSemigroup<G> {
 
   // Division: a * b⁻¹
   template <typename G2>
-  constexpr auto operator/(const G2& other) const {
+  constexpr std::optional<G> operator/(const G2& other) const {
     const std::optional<G2> other_inv = other.Inverse();
     const G* g = static_cast<const G*>(this);
-    if (UNLIKELY(!other_inv)) {
-      // TODO: action if div is invalid!
-    }
+    if (UNLIKELY(!other_inv)) return std::nullopt;
     return g->Mul(*other_inv);
   }
 
@@ -52,13 +50,11 @@ class MultiplicativeGroup : public MultiplicativeSemigroup<G> {
   template <
       typename G2,
       std::enable_if_t<internal::SupportsMulInPlace<G, G2>::value>* = nullptr>
-  constexpr G& operator/=(const G2& other) {
+  constexpr std::optional<G*> operator/=(const G2& other) {
     const std::optional<G2> other_inv = other.Inverse();
     G* g = static_cast<G*>(this);
-    if (UNLIKELY(!other_inv)) {
-      // TODO: action if div is invalid!
-    }
-    return g->MulInPlace(*other_inv);
+    if (UNLIKELY(!other_inv)) return std::nullopt;
+    return &g->MulInPlace(*other_inv);
   }
 
   template <typename Container>

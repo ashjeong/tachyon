@@ -60,7 +60,8 @@ TEST_F(PrimeFieldTest, Mul) {
 }
 
 TEST_F(PrimeFieldTest, Div) {
-  tachyon_bn254_fr c_ret = tachyon_bn254_fr_div(&c_a_, &c_b_);
+  tachyon_bn254_fr c_ret;
+  EXPECT_TRUE(tachyon_bn254_fr_div(&c_a_, &c_b_, &c_ret));
   EXPECT_EQ(c::base::native_cast(c_ret), a_ / b_);
 }
 

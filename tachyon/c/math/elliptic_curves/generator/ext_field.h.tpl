@@ -124,10 +124,12 @@ TACHYON_C_EXPORT tachyon_%{type}_fq%{degree} tachyon_%{type}_fq%{degree}_mul(con
  *
  * @param a Pointer to the Fq%{degree} element to divide.
  * @param b Pointer to the Fq%{degree} element to divide by.
- * @return The quotient a / b. If b is zero, the program will be killed.
+ * @param output Pointer to the resulting quotient.
+ * @return False if the divisor is 0, true otherwise.
  */
-TACHYON_C_EXPORT tachyon_%{type}_fq%{degree} tachyon_%{type}_fq%{degree}_div(const tachyon_%{type}_fq%{degree}* a,
-                                            const tachyon_%{type}_fq%{degree}* b);
+TACHYON_C_EXPORT bool tachyon_%{type}_fq%{degree}_div(const tachyon_%{type}_fq%{degree}* a,
+                                                      const tachyon_%{type}_fq%{degree}* b,
+                                                      tachyon_%{type}_fq%{degree}* output);
 
 /**
  * @brief Checks if two Fq%{degree} elements are equal.

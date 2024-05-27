@@ -84,13 +84,15 @@ tachyon_%{type}_fq%{degree} tachyon_%{type}_fq%{degree}_mul(const tachyon_%{type
   return c_cast(native_a *= native_cast(*b));
 }
 
-tachyon_%{type}_fq%{degree} tachyon_%{type}_fq%{degree}_div(const tachyon_%{type}_fq%{degree}* a,
-                                        const tachyon_%{type}_fq%{degree}* b) {
+bool tachyon_%{type}_fq%{degree}_div(const tachyon_%{type}_fq%{degree}* a,
+                                        const tachyon_%{type}_fq%{degree}* b, tachyon_%{type}_fq%{degree}* output) {
   using namespace tachyon::c::base;
   using NativeType =
       typename TypeTraits<tachyon_%{type}_fq%{degree}>::NativeType;
   NativeType native_a = native_cast(*a);
-  return c_cast(native_a /= native_cast(*b));
+  if (!(native_a /= native_cast(*b))) return false;
+  *output = c_cast(native_a);
+  return true;
 }
 
 bool tachyon_%{type}_fq%{degree}_eq(const tachyon_%{type}_fq%{degree}* a,

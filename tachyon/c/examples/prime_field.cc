@@ -21,7 +21,8 @@ int main() {
   printf("a * b computed.\n");
 
   // Division
-  tachyon_bn254_fr quotient = tachyon_bn254_fr_div(&a, &b);
+  tachyon_bn254_fr quotient;
+  tachyon_bn254_fr_div(&a, &b, &quotient);
   printf("a / b computed.\n");
 
   // Negation

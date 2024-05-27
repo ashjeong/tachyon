@@ -60,13 +60,15 @@ class TACHYON_CC_EXPORT %{cc_field} {
     return *this;
   }
 
-  %{cc_field} operator/(const %{cc_field}& other) const {
-    return %{cc_field}(%{c_field}_div(&value_, &other.value_));
+  std::optional<%{cc_field}> operator/(const %{cc_field}& other) const {
+    %{c_field} ret;
+    if (!%{c_field}_div(&value_, &other.value_, &ret)) return std::nullopt;
+    return %{cc_field}(ret);
   }
 
-  %{cc_field}& operator/=(const %{cc_field}& other) {
-    value_ = %{c_field}_div(&value_, &other.value_);
-    return *this;
+  std::optional<%{cc_field}*> operator/=(const %{cc_field}& other) {
+    if (!%{c_field}_div(&value_, &other.value_, &value_)) return std::nullopt;
+    return this;
   }
 
   %{cc_field} operator-() const {
@@ -120,4 +122,4 @@ class TACHYON_CC_EXPORT %{cc_field} {
 TACHYON_CC_EXPORT std::ostream& operator<<(std::ostream& os, const %{cc_field}& value);
 
 } // namespace tachyon::cc::math::%{type}
-   // clang-format on
+         // clang-format on

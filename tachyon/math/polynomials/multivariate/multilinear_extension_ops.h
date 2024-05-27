@@ -2,6 +2,7 @@
 #define TACHYON_MATH_POLYNOMIALS_MULTIVARIATE_MULTILINEAR_EXTENSION_OPS_H_
 
 #include <algorithm>
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -155,15 +156,14 @@ class MultilinearExtensionOp<MultilinearDenseEvaluations<F, MaxDegree>> {
     return self;
   }
 
-  static MultilinearExtension<D> Div(const MultilinearExtension<D>& self,
-                                     const MultilinearExtension<D>& other) {
+  static std::optional<MultilinearExtension<D>> Div(
+      const MultilinearExtension<D>& self,
+      const MultilinearExtension<D>& other) {
     const std::vector<F>& l_evaluations = self.evaluations_.evaluations_;
     const std::vector<F>& r_evaluations = other.evaluations_.evaluations_;
     if (r_evaluations.empty()) {
       // f(x) / 0
-      // TODO(chokobole): It should return std::nullopt.
-      // See https://github.com/kroma-network/tachyon/issues/76.
-      return MultilinearExtension<D>::Zero();
+      return std::nullopt;
     }
     if (l_evaluations.empty()) {
       // 0 / g(x)
@@ -172,30 +172,30 @@ class MultilinearExtensionOp<MultilinearDenseEvaluations<F, MaxDegree>> {
     CHECK_EQ(l_evaluations.size(), r_evaluations.size());
     std::vector<F> o_evaluations(r_evaluations.size());
     OPENMP_PARALLEL_FOR(size_t i = 0; i < l_evaluations.size(); ++i) {
-      o_evaluations[i] = l_evaluations[i] / r_evaluations[i];
+      std::optional<F> div = l_evaluations[i] / r_evaluations[i];
+      CHECK(div);
+      o_evaluations[i] = *div;
     }
     return MultilinearExtension<D>(D(std::move(o_evaluations)));
   }
 
-  static MultilinearExtension<D>& DivInPlace(
+  static std::optional<MultilinearExtension<D>*> DivInPlace(
       MultilinearExtension<D>& self, const MultilinearExtension<D>& other) {
     std::vector<F>& l_evaluations = self.evaluations_.evaluations_;
     const std::vector<F>& r_evaluations = other.evaluations_.evaluations_;
     if (r_evaluations.empty()) {
       // f(x) / 0
-      // TODO(chokobole): It should return std::nullopt.
-      // See https://github.com/kroma-network/tachyon/issues/76.
-      return self;
+      return std::nullopt;
     }
     if (l_evaluations.empty()) {
       // 0 / g(x)
-      return self;
+      return &self;
     }
     CHECK_EQ(l_evaluations.size(), r_evaluations.size());
     OPENMP_PARALLEL_FOR(size_t i = 0; i < r_evaluations.size(); ++i) {
       l_evaluations[i] /= r_evaluations[i];
     }
-    return self;
+    return &self;
   }
 
   static const MultilinearExtension<D>& ToDense(

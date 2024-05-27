@@ -60,8 +60,12 @@ TEST_F(PrimeFieldTest, Mul) {
 }
 
 TEST_F(PrimeFieldTest, Div) {
-  EXPECT_EQ(c::base::native_cast((cc_a_ / cc_b_).value()), a_ / b_);
-  EXPECT_EQ(c::base::native_cast((cc_a_ /= cc_b_).value()), a_ /= b_);
+  std::optional<bn254::Fr> a_div_b = cc_a_ / cc_b_;
+  CHECK(a_div_b);
+  EXPECT_EQ(c::base::native_cast((*a_div_b).value()), a_ / b_);
+  CHECK(cc_a_ /= cc_b_);
+  CHECK(a_ /= b_);
+  EXPECT_EQ(c::base::native_cast(cc_a_.value()), a_);
 }
 
 TEST_F(PrimeFieldTest, Negate) {

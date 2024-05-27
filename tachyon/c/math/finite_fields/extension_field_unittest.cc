@@ -174,13 +174,16 @@ TEST_F(ExtensionFieldTest, Mul) {
 }
 
 TEST_F(ExtensionFieldTest, Div) {
-  tachyon_bn254_fq2 c_ret2 = tachyon_bn254_fq2_div(&c_fq2_a, &c_fq2_b_);
+  tachyon_bn254_fq2 c_ret2;
+  EXPECT_TRUE(tachyon_bn254_fq2_div(&c_fq2_a, &c_fq2_b_, &c_ret2));
   EXPECT_EQ(c::base::native_cast(c_ret2), native_fq2_a_ / native_fq2_b_);
 
-  tachyon_bn254_fq6 c_ret6 = tachyon_bn254_fq6_div(&c_fq6_a, &c_fq6_b_);
+  tachyon_bn254_fq6 c_ret6;
+  EXPECT_TRUE(tachyon_bn254_fq6_div(&c_fq6_a, &c_fq6_b_, &c_ret6));
   EXPECT_EQ(c::base::native_cast(c_ret6), native_fq6_a_ / native_fq6_b_);
 
-  tachyon_bn254_fq12 c_ret12 = tachyon_bn254_fq12_div(&c_fq12_a, &c_fq12_b2_);
+  tachyon_bn254_fq12 c_ret12;
+  EXPECT_TRUE(tachyon_bn254_fq12_div(&c_fq12_a, &c_fq12_b2_, &c_ret12));
   EXPECT_EQ(c::base::native_cast(c_ret12), native_fq12_a_ / native_fq12_b_);
 }
 

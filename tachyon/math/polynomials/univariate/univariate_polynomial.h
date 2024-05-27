@@ -210,7 +210,23 @@ class UnivariatePolynomial final
                                                                       scalar);
   }
 
-  OPERATION_METHOD(Div)
+  template <typename Coefficients2,
+            std::enable_if_t<internal::SupportsPolyDiv<
+                Coefficients, UnivariatePolynomial<Coefficients>,
+                UnivariatePolynomial<Coefficients2>>::value>* = nullptr>
+  constexpr auto Div(const UnivariatePolynomial<Coefficients2>& other) const {
+    return internal::UnivariatePolynomialOp<Coefficients>::Div(*this, other);
+  }
+
+  template <typename Coefficients2,
+            std::enable_if_t<internal::SupportsPolyDivInPlace<
+                Coefficients, UnivariatePolynomial<Coefficients>,
+                UnivariatePolynomial<Coefficients2>>::value>* = nullptr>
+  constexpr auto DivInPlace(const UnivariatePolynomial<Coefficients2>& other) {
+    return internal::UnivariatePolynomialOp<Coefficients>::DivInPlace(*this,
+                                                                      other);
+  }
+
   OPERATION_METHOD(Mod)
 
 #undef OPERATION_METHOD
@@ -231,7 +247,7 @@ class UnivariatePolynomial final
   }
 
   template <typename Coefficients2>
-  constexpr auto& operator/=(const UnivariatePolynomial<Coefficients2>& other) {
+  constexpr auto operator/=(const UnivariatePolynomial<Coefficients2>& other) {
     return DivInPlace(other);
   }
 

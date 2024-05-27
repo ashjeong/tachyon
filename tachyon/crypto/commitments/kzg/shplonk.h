@@ -212,7 +212,7 @@ class SHPlonk final : public UnivariatePolynomialCommitmentScheme<
 
     // Q(X) = L(X) / (X - u)
     Poly vanishing_poly = Poly::FromRoots(std::vector<Field>({u}));
-    Poly& q_poly = l_poly /= vanishing_poly;
+    Poly q_poly = l_poly /= vanishing_poly;
 
     // Normalize
     // Q(X) = L(X) / ((X - u) * Zᴛ\₀(u))

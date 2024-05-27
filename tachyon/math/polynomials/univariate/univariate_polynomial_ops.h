@@ -341,18 +341,14 @@ class UnivariatePolynomialOp<UnivariateDenseCoefficients<F, MaxDegree>> {
   static UnivariatePolynomial<D> Div(const UnivariatePolynomial<D>& self,
                                      const F& scalar) {
     const std::optional<F> scalar_inv = scalar.Inverse();
-    if (UNLIKELY(!scalar_inv)) {
-      NOTREACHED() << "Divide by zero scalar";
-    }
+    CHECK(scalar_inv);
     return Mul(self, *scalar_inv);
   }
 
   static UnivariatePolynomial<D>& DivInPlace(UnivariatePolynomial<D>& self,
                                              const F& scalar) {
     const std::optional<F> scalar_inv = scalar.Inverse();
-    if (UNLIKELY(!scalar_inv)) {
-      NOTREACHED() << "Divide by zero scalar";
-    }
+    CHECK(scalar_inv);
     return MulInPlace(self, *scalar_inv);
   }
 
@@ -503,10 +499,9 @@ class UnivariatePolynomialOp<UnivariateDenseCoefficients<F, MaxDegree>> {
   static DivResult<UnivariatePolynomial<D>> Divide(
       const UnivariatePolynomial<D>& self,
       const UnivariatePolynomial<DOrS>& other) {
+    CHECK(!other.IsZero());
     if (self.IsZero()) {
       return {UnivariatePolynomial<D>::Zero(), other.ToDense()};
-    } else if (other.IsZero()) {
-      NOTREACHED() << "Divide by zero polynomial";
     } else if (self.Degree() < other.Degree()) {
       return {UnivariatePolynomial<D>::Zero(), self.ToDense()};
     }
@@ -699,18 +694,14 @@ class UnivariatePolynomialOp<UnivariateSparseCoefficients<F, MaxDegree>> {
   static UnivariatePolynomial<S> Div(const UnivariatePolynomial<S>& self,
                                      const F& scalar) {
     const std::optional<F> scalar_inv = scalar.Inverse();
-    if (UNLIKELY(!scalar_inv)) {
-      NOTREACHED() << "Divide by zero scalar";
-    }
+    CHECK(scalar_inv);
     return Mul(self, *scalar_inv);
   }
 
   static UnivariatePolynomial<S>& DivInPlace(UnivariatePolynomial<S>& self,
                                              const F& scalar) {
     const std::optional<F> scalar_inv = scalar.Inverse();
-    if (UNLIKELY(!scalar_inv)) {
-      NOTREACHED() << "Divide by zero scalar";
-    }
+    CHECK(scalar_inv);
     return MulInPlace(self, *scalar_inv);
   }
 

@@ -339,9 +339,10 @@ class UnivariateEvaluationDomain : public EvaluationDomain<F, MaxDegree> {
     if (v_subdomain_of_tau.IsZero()) {
       return F::One();
     } else {
-      return subdomain.size_as_field_element_ *
-             EvaluateVanishingPolynomial(tau) /
-             (size_as_field_element_ * v_subdomain_of_tau);
+      std::optional<F> div = EvaluateVanishingPolynomial(tau) /
+                             (size_as_field_element_ * v_subdomain_of_tau);
+      CHECK(div);
+      return subdomain.size_as_field_element_ * *div;
     }
   }
 

@@ -42,11 +42,13 @@ tachyon_%{type}_%{suffix} tachyon_%{type}_%{suffix}_mul(const tachyon_%{type}_%{
   return c_cast(native_a *= native_cast(*b));
 }
 
-tachyon_%{type}_%{suffix} tachyon_%{type}_%{suffix}_div(const tachyon_%{type}_%{suffix}* a, const tachyon_%{type}_%{suffix}* b) {
+bool tachyon_%{type}_%{suffix}_div(const tachyon_%{type}_%{suffix}* a, const tachyon_%{type}_%{suffix}* b, tachyon_%{type}_%{suffix}* output) {
   using namespace tachyon::c::base;
   using NativeType = typename TypeTraits<tachyon_%{type}_%{suffix}>::NativeType;
   NativeType native_a = native_cast(*a);
-  return c_cast(native_a /= native_cast(*b));
+  if (!(native_a /= native_cast(*b))) return false;
+  *output = c_cast(native_a);
+  return true;
 }
 
 tachyon_%{type}_%{suffix} tachyon_%{type}_%{suffix}_neg(const tachyon_%{type}_%{suffix}* a) {
