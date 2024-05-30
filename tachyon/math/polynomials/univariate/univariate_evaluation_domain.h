@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -45,14 +46,18 @@ class UnivariateEvaluationDomain : public EvaluationDomain<F, MaxDegree> {
   constexpr UnivariateEvaluationDomain(size_t size, uint32_t log_size_of_group)
       : size_(size), log_size_of_group_(log_size_of_group) {
     size_as_field_element_ = F::FromBigInt(typename F::BigIntTy(size_));
-    size_inv_ = size_as_field_element_.Inverse();
+    std::optional<F> inv = size_as_field_element_.Inverse();
+    CHECK(inv);
+    size_inv_ = std::move(*inv);
 
     // Compute the generator for the multiplicative subgroup.
     // It should be the 2^|log_size_of_group_| root of unity.
     CHECK(F::GetRootOfUnity(size_, &group_gen_));
     // Check that it is indeed the 2^(log_size_of_group) root of unity.
     DCHECK_EQ(group_gen_.Pow(size_), F::One());
-    group_gen_inv_ = group_gen_.Inverse();
+    inv = *group_gen_.Inverse();
+    CHECK(inv);
+    group_gen_inv_ = std::move(*inv);
   }
 
   virtual ~UnivariateEvaluationDomain() = default;
@@ -86,7 +91,9 @@ class UnivariateEvaluationDomain : public EvaluationDomain<F, MaxDegree> {
       const F& offset) const {
     std::unique_ptr<UnivariateEvaluationDomain> coset = Clone();
     coset->offset_ = offset;
-    coset->offset_inv_ = offset.Inverse();
+    std::optional<F> inv = offset.Inverse();
+    CHECK(inv);
+    coset->offset_inv_ = std::move(*inv);
     coset->offset_pow_size_ = offset.Pow(size_);
     return coset;
   }
@@ -258,7 +265,9 @@ class UnivariateEvaluationDomain : public EvaluationDomain<F, MaxDegree> {
       //    = (Z_H(τ) * h * gᵢ * t⁻¹)⁻¹
       //    = (Z_H(τ) * h * gᵢ * v₀⁻¹ * h⁻¹)⁻¹
       //    = (Z_H(τ) * gᵢ * v₀)⁻¹
-      F l_i = (z_h_at_tau * omega_i).Inverse() * t;
+      std::optional<F> l_sub_inv = (z_h_at_tau * omega_i).Inverse();
+      CHECK(l_sub_inv);
+      F l_i = std::move(*l_sub_inv) * t;
       F negative_omega_i = -omega_i;
       std::vector<F> lagrange_coefficients_inverse(size);
       base::Parallelize(

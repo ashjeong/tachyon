@@ -233,15 +233,27 @@ class PrimeFieldGpuDebug final
 
   // MultiplicativeGroup methods
   // TODO(chokobole): Share codes with PrimeField and PrimeFieldGpu.
-  constexpr PrimeFieldGpuDebug Inverse() const {
+  constexpr std::optional<PrimeFieldGpuDebug> Inverse() const {
     PrimeFieldGpuDebug ret;
-    DoInverse(*this, ret);
+    if (UNLIKELY(!DoInverse(*this, ret))) {
+      // TODO(ashjeong): implement CUDA error logging
+#if !TACHYON_CUDA
+      LOG(ERROR) << "Inverse of zero attempted";
+#endif  // TACHYON_CUDA
+      return std::nullopt;
+    }
     return ret;
   }
 
-  constexpr PrimeFieldGpuDebug& InverseInPlace() {
-    DoInverse(*this, *this);
-    return *this;
+  [[nodiscard]] constexpr std::optional<PrimeFieldGpuDebug*> InverseInPlace() {
+    if (UNLIKELY(!DoInverse(*this, *this))) {
+      // TODO(ashjeong): implement CUDA error logging
+#if !TACHYON_CUDA
+      LOG(ERROR) << "Inverse of zero attempted";
+#endif  // TACHYON_CUDA
+      return std::nullopt;
+    }
+    return this;
   }
 
  private:
@@ -385,9 +397,15 @@ class PrimeFieldGpuDebug final
                : results;
   }
 
-  constexpr static void DoInverse(const PrimeFieldGpuDebug& a,
-                                  PrimeFieldGpuDebug& b) {
-    CHECK(!a.IsZero());
+  [[nodiscard]] constexpr static bool DoInverse(const PrimeFieldGpuDebug& a,
+                                                PrimeFieldGpuDebug& b) {
+    if (UNLIKELY(!a.IsZero())) {
+      // TODO(ashjeong): implement CUDA error logging
+#if !TACHYON_CUDA
+      LOG(ERROR) << "Inverse of zero attempted";
+#endif  // TACHYON_CUDA
+      return false;
+    }
 
     BigInt<N> u = a.value_;
     BigInt<N> v = Config::kModulus;
@@ -420,6 +438,7 @@ class PrimeFieldGpuDebug final
     } else {
       b = d;
     }
+    return true;
   }
 
   BigInt<N> value_;

@@ -1,3 +1,5 @@
+#include <optional>
+
 #include "gtest/gtest.h"
 
 #include "tachyon/base/buffer/vector_buffer.h"
@@ -156,9 +158,11 @@ TYPED_TEST(PrimeFieldTest, MultiplicativeGroupOperators) {
 
   for (int i = 1; i < 7; ++i) {
     F f(i);
-    EXPECT_EQ(f * f.Inverse(), F::One());
+    const std::optional<F> f_inv = f.Inverse();
+    ASSERT_TRUE(f_inv);
+    EXPECT_EQ(f * *f_inv, F::One());
     F f_tmp = f;
-    f.InverseInPlace();
+    ASSERT_TRUE(f.InverseInPlace());
     EXPECT_EQ(f * f_tmp, F::One());
   }
 

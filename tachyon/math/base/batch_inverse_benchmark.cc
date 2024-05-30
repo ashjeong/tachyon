@@ -1,3 +1,5 @@
+#include <tuple>
+
 #include "benchmark/benchmark.h"
 
 #include "tachyon/base/containers/container_util.h"
@@ -24,7 +26,7 @@ void BM_BatchInverse(benchmark::State& state) {
   std::vector<F> fields = base::CreateVector(
       state.range(0), [](size_t i) { return F::FromBigInt(BigInt(i + 1)); });
   for (auto _ : state) {
-    CHECK(F::BatchInverseInPlace(fields));
+    std::ignore = F::BatchInverseInPlace(fields);
   }
   benchmark::DoNotOptimize(fields);
 }
@@ -37,7 +39,7 @@ void BM_InverseParallelFor(benchmark::State& state) {
       state.range(0), [](size_t i) { return F::FromBigInt(BigInt(i + 1)); });
   for (auto _ : state) {
     OPENMP_PARALLEL_FOR(size_t i = 0; i < fields.size(); ++i) {
-      fields[i].InverseInPlace();
+      std::ignore = fields[i].InverseInPlace();
     }
   }
   benchmark::DoNotOptimize(fields);

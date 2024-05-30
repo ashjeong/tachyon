@@ -188,10 +188,27 @@ class PrimeField<_Config, std::enable_if_t<(_Config::kModulusBits <= 32) &&
   }
 
   // MultiplicativeGroup methods
-  constexpr PrimeField Inverse() const { return this->Pow(GetModulus() - 2); }
+  constexpr std::optional<PrimeField> Inverse() const {
+    if (UNLIKELY(IsZero())) {
+      // TODO(ashjeong): implement CUDA error logging
+#if !TACHYON_CUDA
+      LOG(ERROR) << "Inverse of zero attempted";
+#endif  // TACHYON_CUDA
+      return std::nullopt;
+    }
+    return this->Pow(GetModulus() - 2);
+  }
 
-  constexpr PrimeField& InverseInPlace() {
-    return *this = this->Pow(GetModulus() - 2);
+  [[nodiscard]] constexpr std::optional<PrimeField*> InverseInPlace() {
+    if (UNLIKELY(IsZero())) {
+      // TODO(ashjeong): implement CUDA error logging
+#if !TACHYON_CUDA
+      LOG(ERROR) << "Inverse of zero attempted";
+#endif  // TACHYON_CUDA
+      return std::nullopt;
+    }
+    *this = this->Pow(GetModulus() - 2);
+    return this;
   }
 
  private:

@@ -214,7 +214,8 @@ class ProjectivePoint<
     } else if (z_.IsOne()) {
       return {x_, y_};
     } else {
-      BaseField z_inv = z_.Inverse();
+      // NOTE(ashjeong): if |z_| is 0, |IsZero()| will also evaluate to true
+      BaseField z_inv = *z_.Inverse();
       return {x_ * z_inv, y_ * z_inv};
     }
   }

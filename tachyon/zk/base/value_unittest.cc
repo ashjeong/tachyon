@@ -1,5 +1,7 @@
 #include "tachyon/zk/base/value.h"
 
+#include <tuple>
+
 #include "gtest/gtest.h"
 
 #include "tachyon/math/finite_fields/test/gf7.h"
@@ -149,7 +151,7 @@ TEST(ValueTest, MultiplicativeGroupOperators) {
   } tests[] = {
       {
           Value<math::GF7>::Known(a),
-          Value<math::GF7>::Known(a.Inverse()),
+          Value<math::GF7>::Known(*a.Inverse()),
           Value<math::GF7>::Known(a.Square()),
           Value<math::GF7>::Known(a.Pow(5)),
       },
@@ -163,15 +165,15 @@ TEST(ValueTest, MultiplicativeGroupOperators) {
 
   for (auto& test : tests) {
     if (test.a.IsNone()) {
-      EXPECT_TRUE(test.a.Inverse().IsNone());
-      EXPECT_TRUE(test.a.InverseInPlace().IsNone());
+      EXPECT_TRUE(test.a.Inverse()->IsNone());
+      EXPECT_TRUE((*test.a.InverseInPlace())->IsNone());
       EXPECT_TRUE(test.a.Square().IsNone());
       EXPECT_TRUE(test.a.SquareInPlace().IsNone());
       EXPECT_TRUE(test.a.Pow(5).IsNone());
     } else {
-      EXPECT_EQ(test.a.Inverse(), test.inverse);
+      EXPECT_EQ(*test.a.Inverse(), test.inverse);
       Value<math::GF7> a_tmp = test.a;
-      a_tmp.InverseInPlace();
+      std::ignore = a_tmp.InverseInPlace();
       EXPECT_EQ(a_tmp, test.inverse);
 
       EXPECT_EQ(test.a.Square(), test.sqr);

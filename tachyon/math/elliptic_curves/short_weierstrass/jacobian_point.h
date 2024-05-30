@@ -219,7 +219,8 @@ class JacobianPoint<
     } else if (z_.IsOne()) {
       return {x_, y_};
     } else {
-      BaseField z_inv = z_.Inverse();
+      // NOTE(ashjeong): if |z_| is 0, |IsZero()| will also evaluate to true
+      BaseField z_inv = *z_.Inverse();
       BaseField z_inv_square = z_inv.Square();
       return {x_ * z_inv_square, y_ * z_inv_square * z_inv};
     }

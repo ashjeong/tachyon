@@ -277,17 +277,31 @@ class PrimeField<_Config, std::enable_if_t<!_Config::kUseAsm &&
   }
 
   // MultiplicativeGroup methods
-  constexpr PrimeField Inverse() const {
+  constexpr std::optional<PrimeField> Inverse() const {
     PrimeField ret;
-    ret.value_ = value_.template MontgomeryInverse<Config::kModulusHasSpareBit>(
-        Config::kModulus, Config::kMontgomeryR2);
+    if (UNLIKELY(
+            !value_.template MontgomeryInverse<Config::kModulusHasSpareBit>(
+                Config::kModulus, Config::kMontgomeryR2, ret.value_))) {
+      // TODO(ashjeong): implement CUDA error logging
+#if !TACHYON_CUDA
+      LOG(ERROR) << "Inverse of zero attempted";
+#endif  // TACHYON_CUDA
+      return std::nullopt;
+    }
     return ret;
   }
 
-  constexpr PrimeField& InverseInPlace() {
-    value_ = value_.template MontgomeryInverse<Config::kModulusHasSpareBit>(
-        Config::kModulus, Config::kMontgomeryR2);
-    return *this;
+  [[nodiscard]] constexpr std::optional<PrimeField*> InverseInPlace() {
+    if (UNLIKELY(
+            !value_.template MontgomeryInverse<Config::kModulusHasSpareBit>(
+                Config::kModulus, Config::kMontgomeryR2, value_))) {
+      // TODO(ashjeong): implement CUDA error logging
+#if !TACHYON_CUDA
+      LOG(ERROR) << "Inverse of zero attempted";
+#endif  // TACHYON_CUDA
+      return std::nullopt;
+    }
+    return this;
   }
 
  private:
