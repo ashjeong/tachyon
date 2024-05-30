@@ -1,3 +1,5 @@
+#include <tuple>
+
 #include "absl/hash/hash_testing.h"
 #include "gtest/gtest.h"
 
@@ -266,7 +268,7 @@ TEST_F(UnivariateDensePolynomialTest, MultiplicativeOperators) {
     tmp *= test.b;
     EXPECT_EQ(tmp, test.mul);
     if (!test.b.IsZero()) {
-      tmp /= test.b;
+      std::ignore = tmp /= test.b;
       EXPECT_EQ(tmp, test.a);
     }
   }
@@ -301,13 +303,14 @@ TEST_F(UnivariateDensePolynomialTest, DivScalar) {
   const std::vector<GF7>& coeffs = poly.coefficients().coefficients();
   expected_coeffs.reserve(coeffs.size());
   for (size_t i = 0; i < coeffs.size(); ++i) {
-    expected_coeffs.push_back(coeffs[i] / scalar);
+    expected_coeffs.push_back(*(coeffs[i] / scalar));
   }
 
-  Poly actual = poly / scalar;
+  std::optional<Poly> actual = poly / scalar;
+  ASSERT_TRUE(actual);
   Poly expected(Coeffs(std::move(expected_coeffs)));
-  EXPECT_EQ(actual, expected);
-  poly /= scalar;
+  EXPECT_EQ(*actual, expected);
+  ASSERT_TRUE(poly /= scalar);
   EXPECT_EQ(poly, expected);
 }
 

@@ -333,15 +333,23 @@ class UnivariateEvaluationDomain : public EvaluationDomain<F, MaxDegree> {
 
   // This evaluates at |tau| the filter polynomial for |*this| with respect to
   // |subdomain|.
-  constexpr F EvaluateFilterPolynomial(
+  constexpr std::optional<F> EvaluateFilterPolynomial(
       const UnivariateEvaluationDomain& subdomain, const F& tau) const {
     F v_subdomain_of_tau = subdomain.EvaluateVanishingPolynomial(tau);
     if (v_subdomain_of_tau.IsZero()) {
       return F::One();
     } else {
-      return subdomain.size_as_field_element_ *
-             EvaluateVanishingPolynomial(tau) /
-             (size_as_field_element_ * v_subdomain_of_tau);
+      const std::optional<F> div =
+          EvaluateVanishingPolynomial(tau) /
+          (size_as_field_element_ * v_subdomain_of_tau);
+      if (UNLIKELY(!div)) {
+        // TODO(ashjeong): implement CUDA error logging
+#if !TACHYON_CUDA
+        LOG(ERROR) << "Division by zero attempted";
+#endif  // TACHYON_CUDA
+        return std::nullopt;
+      }
+      return subdomain.size_as_field_element_ * *div;
     }
   }
 

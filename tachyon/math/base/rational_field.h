@@ -101,7 +101,11 @@ class RationalField : public Field<RationalField<F>> {
     return numerator_ * other.denominator_ >= other.numerator_ * denominator_;
   }
 
-  F Evaluate() const { return numerator_ / denominator_; }
+  F Evaluate() const {
+    const std::optional<F> div = numerator_ / denominator_;
+    CHECK(div);
+    return std::move(div).value();
+  }
 
   // AdditiveSemigroup methods
   constexpr RationalField Add(const RationalField& other) const {

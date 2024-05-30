@@ -39,26 +39,34 @@ class MultiplicativeGroup : public MultiplicativeSemigroup<G> {
 
   // Division: a * b⁻¹
   template <typename G2>
-  constexpr G operator/(const G2& other) const {
+  constexpr std::optional<G> operator/(const G2& other) const {
     const std::optional<G> other_inv = other.Inverse();
     const G* g = static_cast<const G*>(this);
     if (UNLIKELY(!other_inv)) {
-      // TODO: action if div is invalid!
+      // TODO(ashjeong): implement CUDA error logging
+#if !TACHYON_CUDA
+      LOG(ERROR) << "Division by zero attempted";
+#endif  // TACHYON_CUDA
+      return std::nullopt;
     }
-    return g->Mul(*other_inv);
+    return g->Mul(std::move(*other_inv));
   }
 
   // Division in place: a *= b⁻¹
   template <
       typename G2,
       std::enable_if_t<internal::SupportsMulInPlace<G, G2>::value>* = nullptr>
-  constexpr G& operator/=(const G2& other) {
+  [[nodiscard]] constexpr std::optional<G*> operator/=(const G2& other) {
     const std::optional<G> other_inv = other.Inverse();
     G* g = static_cast<G*>(this);
     if (UNLIKELY(!other_inv)) {
-      // TODO: action if div is invalid!
+      // TODO(ashjeong): implement CUDA error logging
+#if !TACHYON_CUDA
+      LOG(ERROR) << "Division by zero attempted";
+#endif  // TACHYON_CUDA
+      return std::nullopt;
     }
-    return g->MulInPlace(*other_inv);
+    return &g->MulInPlace(*other_inv);
   }
 
   template <typename Container>
@@ -151,7 +159,10 @@ class MultiplicativeGroup : public MultiplicativeSemigroup<G> {
     // (a₁ * a₂ * ... *  aₙ)⁻¹
     std::optional<G> product_inv = product.Inverse();
     if (UNLIKELY(!product_inv)) {
+      // TODO(ashjeong): implement CUDA error logging
+#if !TACHYON_CUDA
       LOG(ERROR) << "Inverse of zero attempted";
+#endif  // TACHYON_CUDA
       return false;
     }
 

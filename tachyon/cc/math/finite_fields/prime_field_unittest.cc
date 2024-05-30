@@ -60,8 +60,12 @@ TEST_F(PrimeFieldTest, Mul) {
 }
 
 TEST_F(PrimeFieldTest, Div) {
-  EXPECT_EQ(c::base::native_cast((cc_a_ / cc_b_).value()), a_ / b_);
-  EXPECT_EQ(c::base::native_cast((cc_a_ /= cc_b_).value()), a_ /= b_);
+  const std::optional<bn254::Fr> cc_div = cc_a_ / cc_b_;
+  const std::optional<tachyon::math::bn254::Fr> div = a_ / b_;
+  ASSERT_TRUE(cc_div && div);
+  EXPECT_EQ(c::base::native_cast((*cc_div).value()), *div);
+  ASSERT_TRUE(a_ /= b_);
+  EXPECT_EQ(c::base::native_cast((cc_a_ /= cc_b_).value()), a_);
 }
 
 TEST_F(PrimeFieldTest, Negate) {

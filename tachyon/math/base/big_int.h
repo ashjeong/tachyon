@@ -14,6 +14,7 @@
 #include <limits>
 #include <optional>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -422,11 +423,22 @@ struct ALIGNAS(internal::LimbsAlignment(N)) BigInt {
     return *this;
   }
 
-  constexpr BigInt operator/(const BigInt& other) const { return Div(other); }
+  constexpr std::optional<BigInt> operator/(const BigInt& other) const {
+    return Div(other);
+  }
 
-  constexpr BigInt& operator/=(const BigInt& other) {
-    *this = Div(other);
-    return *this;
+  [[nodiscard]] constexpr std::optional<BigInt*> operator/=(
+      const BigInt& other) {
+    const std::optional<BigInt> div = Div(other);
+    if (UNLIKELY(!div)) {
+      // TODO(ashjeong): implement CUDA error logging
+#if !TACHYON_CUDA
+      LOG(ERROR) << "Division by zero attempted";
+#endif  // TACHYON_CUDA
+      return std::nullopt;
+    }
+    *this = std::move(*div);
+    return this;
   }
 
   constexpr BigInt operator%(const BigInt& other) const { return Mod(other); }
@@ -586,18 +598,36 @@ struct ALIGNAS(internal::LimbsAlignment(N)) BigInt {
     return *this;
   }
 
-  constexpr BigInt Div(const BigInt& other) const {
-    return Divide(other).quotient;
+  constexpr std::optional<BigInt> Div(const BigInt& other) const {
+    DivResult<BigInt> result;
+    if (UNLIKELY(!Divide(other, result))) {
+      // TODO(ashjeong): implement CUDA error logging
+#if !TACHYON_CUDA
+      LOG(ERROR) << "Division by zero attempted";
+#endif  // TACHYON_CUDA
+      return std::nullopt;
+    }
+    return result.quotient;
   }
 
+  // NOTE(ashjeong): we assume that mod 0 will never occur
   constexpr BigInt Mod(const BigInt& other) const {
-    return Divide(other).remainder;
+    DivResult<BigInt> result;
+    std::ignore = Divide(other, result);
+    return result.remainder;
   }
 
-  constexpr DivResult<BigInt> Divide(const BigInt<N>& divisor) const {
+  [[nodiscard]] constexpr bool Divide(const BigInt<N>& divisor,
+                                      DivResult<BigInt>& output) const {
     // Stupid slow base-2 long division taken from
     // https://en.wikipedia.org/wiki/Division_algorithm
-    CHECK(!divisor.IsZero());
+    if (UNLIKELY(divisor.IsZero())) {
+      // TODO(ashjeong): implement CUDA error logging
+#if !TACHYON_CUDA
+      LOG(ERROR) << "Division by zero attempted";
+#endif  // TACHYON_CUDA
+      return false;
+    }
     BigInt quotient;
     BigInt remainder;
     size_t bits = BitTraits<BigInt>::GetNumBits(*this);
@@ -610,11 +640,12 @@ struct ALIGNAS(internal::LimbsAlignment(N)) BigInt {
       if (remainder >= divisor || carry) {
         uint64_t borrow = 0;
         remainder.SubInPlace(divisor, borrow);
-        CHECK_EQ(borrow, carry);
+        if (UNLIKELY(borrow != carry)) return false;
         BitTraits<BigInt>::SetBit(quotient, i, 1);
       }
     }
-    return {quotient, remainder};
+    output = DivResult<BigInt>{std::move(quotient), std::move(remainder)};
+    return true;
   }
 
   std::string ToString() const { return internal::LimbsToString(limbs, N); }
@@ -685,7 +716,10 @@ struct ALIGNAS(internal::LimbsAlignment(N)) BigInt {
                                                  const BigInt& r2,
                                                  BigInt& output) const {
     if (UNLIKELY(IsZero())) {
+      // TODO(ashjeong): implement CUDA error logging
+#if !TACHYON_CUDA
       LOG(ERROR) << "Inverse of zero attempted";
+#endif  // TACHYON_CUDA
       return false;
     }
 

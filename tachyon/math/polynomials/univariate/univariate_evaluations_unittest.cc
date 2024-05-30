@@ -1,5 +1,7 @@
 #include "tachyon/math/polynomials/univariate/univariate_evaluations.h"
 
+#include <optional>
+
 #include "absl/hash/hash_testing.h"
 #include "gtest/gtest.h"
 
@@ -200,17 +202,17 @@ TEST_F(UnivariateEvaluationsTest, MultiplicativeOperators) {
     EXPECT_EQ(test.a * test.b, test.mul);
     EXPECT_EQ(test.b * test.a, test.mul);
     if (!test.b.IsZero()) {
-      EXPECT_EQ(test.a / test.b, test.adb);
+      EXPECT_EQ(*(test.a / test.b), test.adb);
     }
     if (!test.a.IsZero()) {
-      EXPECT_EQ(test.b / test.a, test.bda);
+      EXPECT_EQ(*(test.b / test.a), test.bda);
     }
     Poly tmp = test.a;
     tmp *= test.b;
     EXPECT_EQ(tmp, test.mul);
     if (!test.b.IsZero()) {
       tmp = test.a;
-      tmp /= test.b;
+      ASSERT_TRUE(tmp /= test.b);
       EXPECT_EQ(tmp, test.adb);
     }
   }
@@ -245,14 +247,15 @@ TEST_F(UnivariateEvaluationsTest, DivScalar) {
   const std::vector<GF7>& evals = poly.evaluations();
   expected_evals.reserve(evals.size());
   for (size_t i = 0; i < evals.size(); ++i) {
-    expected_evals.push_back(evals[i] / scalar);
+    const std::optional<GF7> div = evals[i] / scalar;
+    ASSERT_TRUE(div);
+    expected_evals.push_back(*div);
   }
 
-  Poly actual = poly / scalar;
+  Poly actual = *(poly / scalar);
   Poly expected(std::move(expected_evals));
   EXPECT_EQ(actual, expected);
-  poly /= scalar;
-  EXPECT_EQ(poly, expected);
+  EXPECT_EQ(**(poly /= scalar), expected);
 }
 
 TEST_F(UnivariateEvaluationsTest, Copyable) {

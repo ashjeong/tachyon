@@ -1,5 +1,6 @@
 #include "tachyon/math/base/groups.h"
 
+#include <optional>
 #include <string>
 
 #include "gmock/gmock.h"
@@ -34,7 +35,9 @@ TEST(GroupsTest, Div) {
   EXPECT_CALL(a, Mul(testing::_)).Times(testing::Exactly(1));
   EXPECT_CALL(b, Inverse()).Times(testing::Exactly(1));
 
-  Int c = a / b;
+  const std::optional<Int> div = a / b;
+  ASSERT_TRUE(div);
+  Int c = std::move(*div);
   static_cast<void>(c);
 }
 

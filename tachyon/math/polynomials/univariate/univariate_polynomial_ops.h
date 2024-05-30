@@ -338,41 +338,69 @@ class UnivariatePolynomialOp<UnivariateDenseCoefficients<F, MaxDegree>> {
     return self;
   }
 
-  static UnivariatePolynomial<D> Div(const UnivariatePolynomial<D>& self,
-                                     const F& scalar) {
+  static std::optional<UnivariatePolynomial<D>> Div(
+      const UnivariatePolynomial<D>& self, const F& scalar) {
     const std::optional<F> scalar_inv = scalar.Inverse();
-    CHECK(scalar_inv);
+    if (UNLIKELY(!scalar_inv)) {
+      // TODO(ashjeong): implement CUDA error logging
+#if !TACHYON_CUDA
+      LOG(ERROR) << "Division by zero attempted";
+#endif  // TACHYON_CUDA
+      return std::nullopt;
+    }
     return Mul(self, *scalar_inv);
   }
 
-  static UnivariatePolynomial<D>& DivInPlace(UnivariatePolynomial<D>& self,
-                                             const F& scalar) {
+  [[nodiscard]] static std::optional<UnivariatePolynomial<D>*> DivInPlace(
+      UnivariatePolynomial<D>& self, const F& scalar) {
     const std::optional<F> scalar_inv = scalar.Inverse();
-    CHECK(scalar_inv);
-    return MulInPlace(self, *scalar_inv);
+    if (UNLIKELY(!scalar_inv)) {
+      // TODO(ashjeong): implement CUDA error logging
+#if !TACHYON_CUDA
+      LOG(ERROR) << "Division by zero attempted";
+#endif  // TACHYON_CUDA
+      return std::nullopt;
+    }
+    return &MulInPlace(self, *scalar_inv);
   }
 
   template <typename DOrS>
-  static UnivariatePolynomial<D> Div(const UnivariatePolynomial<D>& self,
-                                     const UnivariatePolynomial<DOrS>& other) {
+  constexpr static std::optional<UnivariatePolynomial<D>> Div(
+      const UnivariatePolynomial<D>& self,
+      const UnivariatePolynomial<DOrS>& other) {
     if (self.IsZero()) {
       return self;
     }
-    DivResult<UnivariatePolynomial<D>> result = Divide(self, other);
+    DivResult<UnivariatePolynomial<D>> result;
+    if (UNLIKELY(!Divide(self, other, result))) {
+      // TODO(ashjeong): implement CUDA error logging
+#if !TACHYON_CUDA
+      LOG(ERROR) << "Division by zero attempted";
+#endif  // TACHYON_CUDA
+      return std::nullopt;
+    }
     result.quotient.coefficients_.RemoveHighDegreeZeros();
     return result.quotient;
   }
 
   template <typename DOrS>
-  static UnivariatePolynomial<D>& DivInPlace(
-      UnivariatePolynomial<D>& self, const UnivariatePolynomial<DOrS>& other) {
+  [[nodiscard]] constexpr static std::optional<UnivariatePolynomial<D>*>
+  DivInPlace(UnivariatePolynomial<D>& self,
+             const UnivariatePolynomial<DOrS>& other) {
     if (self.IsZero()) {
-      return self;
+      return &self;
     }
-    DivResult<UnivariatePolynomial<D>> result = Divide(self, other);
+    DivResult<UnivariatePolynomial<D>> result;
+    if (UNLIKELY(!Divide(self, other, result))) {
+      // TODO(ashjeong): implement CUDA error logging
+#if !TACHYON_CUDA
+      LOG(ERROR) << "Division by zero attempted";
+#endif  // TACHYON_CUDA
+      return std::nullopt;
+    }
     self = std::move(result.quotient);
     self.coefficients_.RemoveHighDegreeZeros();
-    return self;
+    return &self;
   }
 
   template <typename DOrS>
@@ -381,7 +409,8 @@ class UnivariatePolynomialOp<UnivariateDenseCoefficients<F, MaxDegree>> {
     if (self.IsZero()) {
       return other.ToDense();
     }
-    DivResult<UnivariatePolynomial<D>> result = Divide(self, other);
+    DivResult<UnivariatePolynomial<D>> result;
+    CHECK(Divide(self, other, result));
     result.remainder.coefficients_.RemoveHighDegreeZeros();
     return result.remainder;
   }
@@ -392,7 +421,8 @@ class UnivariatePolynomialOp<UnivariateDenseCoefficients<F, MaxDegree>> {
     if (self.IsZero()) {
       return self = other.ToDense();
     }
-    DivResult<UnivariatePolynomial<D>> result = Divide(self, other);
+    DivResult<UnivariatePolynomial<D>> result;
+    CHECK(Divide(self, other, result));
     self = std::move(result.remainder);
     self.coefficients_.RemoveHighDegreeZeros();
     return self;
@@ -405,7 +435,9 @@ class UnivariatePolynomialOp<UnivariateDenseCoefficients<F, MaxDegree>> {
     if (self.IsZero()) {
       return {UnivariatePolynomial<D>::Zero(), other.ToDense()};
     }
-    return Divide(self, other);
+    DivResult<UnivariatePolynomial<D>> result;
+    CHECK(Divide(self, other, result));
+    return result;
   }
 
   static const UnivariatePolynomial<D>& ToDense(
@@ -496,15 +528,24 @@ class UnivariatePolynomialOp<UnivariateDenseCoefficients<F, MaxDegree>> {
   }
 
   template <typename DOrS>
-  static DivResult<UnivariatePolynomial<D>> Divide(
-      const UnivariatePolynomial<D>& self,
-      const UnivariatePolynomial<DOrS>& other) {
+  constexpr static bool Divide(const UnivariatePolynomial<D>& self,
+                               const UnivariatePolynomial<DOrS>& other,
+                               DivResult<UnivariatePolynomial<D>>& output) {
+    if (UNLIKELY(other.IsZero())) {
+      // TODO(ashjeong): implement CUDA error logging
+#if !TACHYON_CUDA
+      LOG(ERROR) << "Division by zero attempted";
+#endif  // TACHYON_CUDA
+      return false;
+    }
     if (self.IsZero()) {
-      return {UnivariatePolynomial<D>::Zero(), other.ToDense()};
-    } else if (other.IsZero()) {
-      NOTREACHED() << "Divide by zero polynomial";
+      output = DivResult<UnivariatePolynomial<D>>{
+          UnivariatePolynomial<D>::Zero(), other.ToDense()};
+      return true;
     } else if (self.Degree() < other.Degree()) {
-      return {UnivariatePolynomial<D>::Zero(), self.ToDense()};
+      output = DivResult<UnivariatePolynomial<D>>{
+          UnivariatePolynomial<D>::Zero(), self.ToDense()};
+      return true;
     }
     std::vector<F> quotient(self.Degree() - other.Degree() + 1);
     UnivariatePolynomial<D> remainder = self.ToDense();
@@ -533,7 +574,9 @@ class UnivariatePolynomialOp<UnivariateDenseCoefficients<F, MaxDegree>> {
     }
     D d(std::move(quotient));
     d.RemoveHighDegreeZeros();
-    return {UnivariatePolynomial<D>(std::move(d)), std::move(remainder)};
+    output = DivResult<UnivariatePolynomial<D>>{
+        UnivariatePolynomial<D>(std::move(d)), std::move(remainder)};
+    return true;
   }
 };
 
@@ -690,23 +733,36 @@ class UnivariatePolynomialOp<UnivariateSparseCoefficients<F, MaxDegree>> {
     return self;
   }
 
-  static UnivariatePolynomial<S> Div(const UnivariatePolynomial<S>& self,
-                                     const F& scalar) {
+  static std::optional<UnivariatePolynomial<S>> Div(
+      const UnivariatePolynomial<S>& self, const F& scalar) {
     const std::optional<F> scalar_inv = scalar.Inverse();
-    CHECK(scalar_inv);
+    if (UNLIKELY(!scalar_inv)) {
+      // TODO(ashjeong): implement CUDA error logging
+#if !TACHYON_CUDA
+      LOG(ERROR) << "Division by zero attempted";
+#endif  // TACHYON_CUDA
+      return std::nullopt;
+    }
     return Mul(self, *scalar_inv);
   }
 
-  static UnivariatePolynomial<S>& DivInPlace(UnivariatePolynomial<S>& self,
-                                             const F& scalar) {
+  [[nodiscard]] static std::optional<UnivariatePolynomial<S>*> DivInPlace(
+      UnivariatePolynomial<S>& self, const F& scalar) {
     const std::optional<F> scalar_inv = scalar.Inverse();
-    CHECK(scalar_inv);
-    return MulInPlace(self, *scalar_inv);
+    if (UNLIKELY(!scalar_inv)) {
+      // TODO(ashjeong): implement CUDA error logging
+#if !TACHYON_CUDA
+      LOG(ERROR) << "Division by zero attempted";
+#endif  // TACHYON_CUDA
+      return std::nullopt;
+    }
+    return &MulInPlace(self, *scalar_inv);
   }
 
   template <typename DOrS>
-  static UnivariatePolynomial<D> Div(const UnivariatePolynomial<S>& self,
-                                     const UnivariatePolynomial<DOrS>& other) {
+  constexpr static std::optional<UnivariatePolynomial<D>> Div(
+      const UnivariatePolynomial<S>& self,
+      const UnivariatePolynomial<DOrS>& other) {
     if (self.IsZero()) {
       return UnivariatePolynomial<D>::Zero();
     }

@@ -7,6 +7,7 @@
 #define TACHYON_MATH_POLYNOMIALS_UNIVARIATE_UNIVARIATE_EVALUATIONS_OPS_H_
 
 #include <algorithm>
+#include <atomic>
 #include <optional>
 #include <utility>
 #include <vector>
@@ -184,57 +185,98 @@ class UnivariateEvaluationsOp {
     return self;
   }
 
-  static Poly Div(const Poly& self, const Poly& other) {
+  CONSTEXPR_IF_NOT_OPENMP static std::optional<Poly> Div(const Poly& self,
+                                                         const Poly& other) {
     const std::vector<F>& l_evaluations = self.evaluations_;
     const std::vector<F>& r_evaluations = other.evaluations_;
-    if (r_evaluations.empty()) {
-      // f(x) / 0
-      // TODO(chokobole): It should return std::nullopt.
-      // See https://github.com/kroma-network/tachyon/issues/76.
-      return Poly::Zero();
+    // f(x) / 0
+    if (UNLIKELY(r_evaluations.empty() ||
+                 l_evaluations.size() != r_evaluations.size())) {
+      // TODO(ashjeong): implement CUDA error logging
+#if !TACHYON_CUDA
+      LOG(ERROR) << "Division invalid";
+#endif  // TACHYON_CUDA
+      return std::nullopt;
     }
     if (l_evaluations.empty()) {
       // 0 / g(x)
       return self;
     }
-    CHECK_EQ(l_evaluations.size(), r_evaluations.size());
     std::vector<F> o_evaluations(r_evaluations.size());
+    std::atomic<bool> check_valid(true);
     OPENMP_PARALLEL_FOR(size_t i = 0; i < r_evaluations.size(); ++i) {
-      o_evaluations[i] = l_evaluations[i] / r_evaluations[i];
+      const std::optional<F> div = l_evaluations[i] / r_evaluations[i];
+      if (UNLIKELY(!div)) {
+        check_valid.store(false, std::memory_order_relaxed);
+        continue;
+      }
+      o_evaluations[i] = std::move(*div);
+    }
+    if (UNLIKELY(!check_valid.load(std::memory_order_relaxed))) {
+      // TODO(ashjeong): implement CUDA error logging
+#if !TACHYON_CUDA
+      LOG(ERROR) << "Division by zero attempted";
+#endif  // TACHYON_CUDA
+      return std::nullopt;
     }
     return Poly(std::move(o_evaluations));
   }
 
-  static Poly& DivInPlace(Poly& self, const Poly& other) {
+  [[nodiscard]] CONSTEXPR_IF_NOT_OPENMP static std::optional<Poly*> DivInPlace(
+      Poly& self, const Poly& other) {
     std::vector<F>& l_evaluations = self.evaluations_;
     const std::vector<F>& r_evaluations = other.evaluations_;
-    if (r_evaluations.empty()) {
-      // f(x) / 0
-      // TODO(chokobole): It should return std::nullopt.
-      // See https://github.com/kroma-network/tachyon/issues/76.
-      return self;
+    // f(x) / 0
+    if (UNLIKELY(r_evaluations.empty() ||
+                 l_evaluations.size() != r_evaluations.size())) {
+      // TODO(ashjeong): implement CUDA error logging
+#if !TACHYON_CUDA
+      LOG(ERROR) << "Division invalid";
+#endif  // TACHYON_CUDA
+      return std::nullopt;
     }
     if (l_evaluations.empty()) {
       // 0 / g(x)
-      return self;
+      return &self;
     }
-    CHECK_EQ(l_evaluations.size(), r_evaluations.size());
+    std::atomic<bool> check_valid(true);
     OPENMP_PARALLEL_FOR(size_t i = 0; i < r_evaluations.size(); ++i) {
-      l_evaluations[i] /= r_evaluations[i];
+      if (UNLIKELY(!(l_evaluations[i] /= r_evaluations[i])))
+        check_valid.store(false, std::memory_order_relaxed);
     }
-    return self;
+    if (UNLIKELY(!check_valid.load(std::memory_order_relaxed))) {
+      // TODO(ashjeong): implement CUDA error logging
+#if !TACHYON_CUDA
+      LOG(ERROR) << "Division by zero attempted";
+#endif  // TACHYON_CUDA
+      return std::nullopt;
+    }
+    return &self;
   }
 
-  static Poly Div(const Poly& self, const F& scalar) {
+  constexpr static std::optional<Poly> Div(const Poly& self, const F& scalar) {
     const std::optional<F> scalar_inv = scalar.Inverse();
-    CHECK(scalar_inv);
+    if (!scalar_inv) {
+      // TODO(ashjeong): implement CUDA error logging
+#if !TACHYON_CUDA
+      LOG(ERROR) << "Division by zero attempted";
+#endif  // TACHYON_CUDA
+      return std::nullopt;
+    }
     return Mul(self, *scalar_inv);
   }
 
-  static Poly& DivInPlace(Poly& self, const F& scalar) {
+  [[nodiscard]] constexpr static std::optional<Poly*> DivInPlace(
+      Poly& self, const F& scalar) {
     const std::optional<F> scalar_inv = scalar.Inverse();
-    CHECK(scalar_inv);
-    return MulInPlace(self, *scalar_inv);
+    if (!scalar_inv) {
+      // TODO(ashjeong): implement CUDA error logging
+#if !TACHYON_CUDA
+      LOG(ERROR) << "Division by zero attempted";
+#endif  // TACHYON_CUDA
+      return std::nullopt;
+    }
+    return &MulInPlace(self, *scalar_inv);
   }
 };
 

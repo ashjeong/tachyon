@@ -61,7 +61,7 @@ TEST(GoldilocksPrimeFieldTest, MultiplicativeOperators) {
   Goldilocks tmp = fa;
   tmp *= fb;
   EXPECT_EQ((tmp).ToBigInt()[0], mul);
-  tmp /= fb;
+  ASSERT_TRUE(tmp /= fb);
   EXPECT_EQ((tmp).ToBigInt()[0], a);
 }
 

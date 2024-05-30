@@ -3,6 +3,8 @@
 // can be found in the LICENSE-MIT.arkworks and the LICENCE-APACHE.arkworks
 // file.
 
+#include <optional>
+
 #include "absl/types/span.h"
 #include "gtest/gtest.h"
 
@@ -116,13 +118,14 @@ TYPED_TEST(UnivariateEvaluationDomainTest, FilterPolynomial) {
           DensePoly filter_poly = domain->GetFilterPolynomial(*coset);
           EXPECT_EQ(filter_poly.Degree(), domain_size - subdomain_size);
           for (const bls12_381::Fr& element : domain->GetElements()) {
-            bls12_381::Fr evaluation =
+            const std::optional<bls12_381::Fr> evaluation =
                 domain->EvaluateFilterPolynomial(*coset, element);
-            EXPECT_EQ(evaluation, filter_poly.Evaluate(element));
+            ASSERT_TRUE(evaluation);
+            EXPECT_EQ(*evaluation, filter_poly.Evaluate(element));
             if (base::Contains(coset_elements, element)) {
-              EXPECT_TRUE(evaluation.IsOne());
+              EXPECT_TRUE(evaluation->IsOne());
             } else {
-              EXPECT_TRUE(evaluation.IsZero());
+              EXPECT_TRUE(evaluation->IsZero());
             }
           }
         }
