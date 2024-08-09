@@ -20,9 +20,9 @@ class Poseidon2ExternalMatrix {
 
   static void Apply(math::Vector<Field>& v) {
     size_t size = v.size();
-    if (size <= 1 || size > 24) {
-      NOTREACHED() << "Out of range";
-    } else if (size == 2) {
+    DCHECK_GT(size, size_t{1});
+    DCHECK_LE(size, size_t{24});
+    if (size == 2) {
       Field sum = v[0] + v[1];
       v[0] += sum;
       v[1] += sum;
@@ -35,9 +35,7 @@ class Poseidon2ExternalMatrix {
       return;
     }
 
-    if (size % 4 != 0) {
-      NOTREACHED() << "Not a multiple of 4";
-    }
+    DCHECK_EQ(size % 4, size_t{0}) << "Not a multiple of 4";
 
     if (size == 4) {
       Derived::DoApply(v);
