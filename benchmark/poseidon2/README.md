@@ -1,6 +1,6 @@
 # Poseidon2 Hash Benchmark
 
-```shell
+```
 Run on 13th Gen Intel(R) Core(TM) i9-13900K (32 X 5500 MHz CPU s)
 CPU Caches:
   L1 Data 48 KiB (x16)
