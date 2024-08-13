@@ -65,7 +65,7 @@ void Run(SimplePoseidonBenchmarkReporter& reporter,
       if constexpr (Field::Config::kModulusBits < 32) {
         if (vendor == tachyon::Poseidon2Config::Vendor::kHorizen) {
           // NOTE(ashjeong): horizen's montgomery R = tachyon's montgomery R²
-          CHECK(result == Field::FromMontgomery(result_vendor.ToBigInt()[0]))
+          CHECK_EQ(result, Field::FromMontgomery(result_vendor.ToBigInt()[0]))
               << "Result does not match";
         } else {
           CHECK_EQ(result, result_vendor) << "Result does not match";
