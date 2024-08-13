@@ -22,13 +22,13 @@
 namespace tachyon {
 
 template <typename Field>
-class PoseidonBenchmarkRunner {
+class Poseidon2BenchmarkRunner {
  public:
   using CPrimeField = typename c::base::TypeTraits<Field>::CType;
 
   typedef CPrimeField* (*PoseidonExternalFn)(uint64_t* duration);
 
-  PoseidonBenchmarkRunner(SimplePoseidonBenchmarkReporter* reporter,
+  Poseidon2BenchmarkRunner(SimplePoseidonBenchmarkReporter* reporter,
                           const Poseidon2Config* config)
       : reporter_(reporter), config_(config) {}
 

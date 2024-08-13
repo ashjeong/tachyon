@@ -26,7 +26,7 @@ void Run(SimplePoseidonBenchmarkReporter& reporter,
          const tachyon::Poseidon2Config& config, Fn horizen_fn, Fn plonky3_fn) {
   Field::Init();
 
-  PoseidonBenchmarkRunner<Field> runner(&reporter, &config);
+  Poseidon2BenchmarkRunner<Field> runner(&reporter, &config);
 
   crypto::Poseidon2Config<Field> poseidon2_config =
       crypto::Poseidon2Config<Field>::CreateCustom(
