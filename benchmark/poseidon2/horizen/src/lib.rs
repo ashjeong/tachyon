@@ -10,7 +10,7 @@ use zkhash::{
     },
 };
 
-fn run_poseidon<F: PrimeField + std::convert::From<i32>, R>(
+fn run_poseidon2<F: PrimeField + std::convert::From<i32>, R>(
     duration: *mut u64,
     params: &Arc<Poseidon2Params<F>>,
 ) -> *mut R {
@@ -30,11 +30,11 @@ fn run_poseidon<F: PrimeField + std::convert::From<i32>, R>(
 }
 
 #[no_mangle]
-pub extern "C" fn run_poseidon_horizen_baby_bear(duration: *mut u64) -> *mut CppBabyBear {
-    run_poseidon::<_, CppBabyBear>(duration, &POSEIDON2_BABYBEAR_16_PARAMS)
+pub extern "C" fn run_poseidon2_horizen_baby_bear(duration: *mut u64) -> *mut CppBabyBear {
+    run_poseidon2::<_, CppBabyBear>(duration, &POSEIDON2_BABYBEAR_16_PARAMS)
 }
 
 #[no_mangle]
-pub extern "C" fn run_poseidon_horizen_bn254_fr(duration: *mut u64) -> *mut CppBn254Fr {
-    run_poseidon::<_, CppBn254Fr>(duration, &POSEIDON2_BN256_PARAMS)
+pub extern "C" fn run_poseidon2_horizen_bn254_fr(duration: *mut u64) -> *mut CppBn254Fr {
+    run_poseidon2::<_, CppBn254Fr>(duration, &POSEIDON2_BN256_PARAMS)
 }

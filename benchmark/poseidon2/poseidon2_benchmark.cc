@@ -21,12 +21,12 @@ namespace tachyon {
 
 using namespace crypto;
 
-extern "C" tachyon_baby_bear* run_poseidon_horizen_baby_bear(
+extern "C" tachyon_baby_bear* run_poseidon2_horizen_baby_bear(
     uint64_t* duration);
-extern "C" tachyon_baby_bear* run_poseidon_plonky3_baby_bear(
+extern "C" tachyon_baby_bear* run_poseidon2_plonky3_baby_bear(
     uint64_t* duration);
-extern "C" tachyon_bn254_fr* run_poseidon_horizen_bn254_fr(uint64_t* duration);
-extern "C" tachyon_bn254_fr* run_poseidon_plonky3_bn254_fr(uint64_t* duration);
+extern "C" tachyon_bn254_fr* run_poseidon2_horizen_bn254_fr(uint64_t* duration);
+extern "C" tachyon_bn254_fr* run_poseidon2_plonky3_bn254_fr(uint64_t* duration);
 
 template <typename Field, typename Fn>
 void Run(SimplePoseidonBenchmarkReporter& reporter,
@@ -92,13 +92,13 @@ int RealMain(int argc, char** argv) {
 
   switch (config.prime_field()) {
     case tachyon::Poseidon2Config::PrimeField::kBabyBear: {
-      Run<math::BabyBear>(reporter, config, run_poseidon_horizen_baby_bear,
-                          run_poseidon_plonky3_baby_bear);
+      Run<math::BabyBear>(reporter, config, run_poseidon2_horizen_baby_bear,
+                          run_poseidon2_plonky3_baby_bear);
       break;
     }
     case tachyon::Poseidon2Config::PrimeField::kBn254Fr: {
-      Run<math::bn254::Fr>(reporter, config, run_poseidon_horizen_bn254_fr,
-                           run_poseidon_plonky3_bn254_fr);
+      Run<math::bn254::Fr>(reporter, config, run_poseidon2_horizen_bn254_fr,
+                           run_poseidon2_plonky3_bn254_fr);
       break;
     }
   }
