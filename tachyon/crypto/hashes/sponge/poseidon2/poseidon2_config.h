@@ -63,11 +63,11 @@ struct Poseidon2Config : public PoseidonConfigBase<F> {
       : PoseidonConfigBase<F>(std::move(base)),
         internal_diagonal_minus_one(std::move(internal_diagonal_minus_one)) {}
 
-  template <size_t N>
+  template <size_t N, uint64_t alpha, size_t full_rounds, size_t partial_rounds>
   constexpr static Poseidon2Config CreateCustom(
-      size_t rate, uint64_t alpha, size_t full_rounds, size_t partial_rounds,
       const std::array<PrimeField, N>& internal_diagonal_minus_one) {
-    Poseidon2ConfigEntry config_entry(rate, alpha, full_rounds, partial_rounds);
+    Poseidon2ConfigEntry config_entry(N - 1, alpha, full_rounds,
+                                      partial_rounds);
     Poseidon2Config ret = config_entry.ToPoseidon2Config<F>();
     ret.internal_diagonal_minus_one = math::Vector<F>(N);
     for (size_t i = 0; i < N; ++i) {
@@ -82,11 +82,10 @@ struct Poseidon2Config : public PoseidonConfigBase<F> {
     return ret;
   }
 
-  template <size_t N>
+  template <size_t N, uint64_t alpha, size_t full_rounds, size_t partial_rounds>
   constexpr static Poseidon2Config CreateCustom(
-      size_t rate, uint64_t alpha, size_t full_rounds, size_t partial_rounds,
       const std::array<uint8_t, N>& internal_shifts) {
-    Poseidon2ConfigEntry config_entry(rate, alpha, full_rounds, partial_rounds);
+    Poseidon2ConfigEntry config_entry(N, alpha, full_rounds, partial_rounds);
     Poseidon2Config ret = config_entry.ToPoseidon2Config<F>();
     ret.use_plonky3_internal_matrix = true;
     if constexpr (math::FiniteFieldTraits<F>::kIsPackedPrimeField) {

@@ -26,8 +26,9 @@ TEST_F(PaddingFreeSpongeTest, Hash) {
   constexpr size_t kRate = 8;
   constexpr size_t kOut = 8;
 
-  Poseidon2Config<F> config = Poseidon2Config<F>::CreateCustom(
-      15, 7, 8, 13, math::GetPoseidon2BabyBearInternalShiftArray<15>());
+  Poseidon2Config<F> config =
+      Poseidon2Config<F>::template CreateCustom<15, 7, 8, 13>(
+          math::GetPoseidon2BabyBearInternalShiftArray<15>());
   Poseidon2 sponge(std::move(config));
   PaddingFreeSponge<Poseidon2, kRate, kOut> hasher(std::move(sponge));
   std::vector<F> inputs =

@@ -27,9 +27,11 @@ class DuplexChallengerTest : public math::FiniteFieldTest<F> {
   constexpr static size_t kRate = 4;
 
   void SetUp() override {
+    LOG(ERROR) << "duplex setup";
     crypto::Poseidon2Config<F> config =
-        crypto::Poseidon2Config<F>::CreateCustom(
-            15, 7, 8, 13, math::GetPoseidon2BabyBearInternalShiftArray<15>());
+        crypto::Poseidon2Config<F>::template CreateCustom<15, 7, 8, 13>(
+            math::GetPoseidon2BabyBearInternalShiftArray<15>());
+    LOG(ERROR) << "is it here?";
     Poseidon2 sponge(std::move(config));
     challenger_ = DuplexChallenger<Poseidon2, kWidth, kRate>(std::move(sponge));
   }

@@ -28,8 +28,8 @@ class HashChallengerTest : public math::FiniteFieldTest<F> {
  public:
   void SetUp() override {
     crypto::Poseidon2Config<F> config =
-        crypto::Poseidon2Config<F>::CreateCustom(
-            15, 7, 8, 13, math::GetPoseidon2BabyBearInternalShiftArray<15>());
+        crypto::Poseidon2Config<F>::template CreateCustom<15, 7, 8, 13>(
+            math::GetPoseidon2BabyBearInternalShiftArray<15>());
     Poseidon2 sponge(std::move(config));
     Hasher hasher(std::move(sponge));
 
