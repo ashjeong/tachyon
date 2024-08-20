@@ -66,6 +66,18 @@ math::Vector<F> MulMatVecSerial(const Eigen::MatrixBase<Derived>& matrix,
   return ret;
 }
 
+template <typename Derived, typename F = typename Derived::Scalar>
+std::vector<F> MulMatTrueVecSerial(const Eigen::MatrixBase<Derived>& matrix,
+                                   const std::vector<F>& vector) {
+  std::vector<F> ret(vector.size(), F::Zero());
+  for (Eigen::Index i = 0; i < matrix.rows(); ++i) {
+    for (Eigen::Index j = 0; j < matrix.cols(); ++j) {
+      ret[i] += matrix(i, j) * vector[j];
+    }
+  }
+  return ret;
+}
+
 template <typename Derived, typename Derived2, enum Eigen::AccessorLevels Level,
           typename F = typename Derived::Scalar>
 math::Vector<F> MulMatVec(

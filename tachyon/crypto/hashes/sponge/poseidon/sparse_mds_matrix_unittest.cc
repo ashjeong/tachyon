@@ -28,9 +28,12 @@ TEST_F(SparseMDSMatrixTest, Apply) {
                                        math::Vector<F>::Random(4));
   math::Matrix<F> matrix = sparse_mds_matrix.Construct();
   math::Vector<F> state = math::Vector<F>::Random(5);
-  math::Vector<F> state2 = state;
+  std::vector<F> state2{state[0], state[1], state[2], state[3], state[4]};
   sparse_mds_matrix.Apply(state2);
-  EXPECT_EQ(matrix * state, state2);
+  matrix *= state;
+  for (size_t i = 0; i < 5; ++i) {
+    EXPECT_EQ(matrix(i, 0), state2[i]);
+  }
 }
 
 TEST_F(SparseMDSMatrixTest, Copyable) {

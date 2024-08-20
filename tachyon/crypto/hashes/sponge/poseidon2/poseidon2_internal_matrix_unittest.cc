@@ -25,8 +25,8 @@ TYPED_TEST_SUITE(Poseidon2InternalMatrixTest, FieldTypes);
 TYPED_TEST(Poseidon2InternalMatrixTest, ApplyHorizen) {
   using F = TypeParam;
 
-  math::Vector<F> diagonal_minus_one_vec =
-      math::Vector<F>::Random(3) - math::Vector<F>::Constant(3, F::One());
+  std::vector<F> diagonal_minus_one_vec =
+      base::CreateVector(3, []() { return F::Random() - F::One(); });
 
   math::Matrix<F> matrix{
       {diagonal_minus_one_vec[0] + F::One(), F::One(), F::One()},
@@ -35,9 +35,12 @@ TYPED_TEST(Poseidon2InternalMatrixTest, ApplyHorizen) {
   };
 
   math::Vector<F> state = math::Vector<F>::Random(3);
-  math::Vector<F> state2 = state;
+  std::vector<F> state2{state(0, 0), state(1, 0), state(2, 0)};
   Poseidon2HorizenInternalMatrix<F>::Apply(state2, diagonal_minus_one_vec);
-  EXPECT_EQ(matrix * state, state2);
+  matrix *= state;
+  for (size_t i = 0; i < 3; ++i) {
+    EXPECT_EQ(matrix(i, 0), state2[i]);
+  }
 }
 
 }  // namespace tachyon::crypto

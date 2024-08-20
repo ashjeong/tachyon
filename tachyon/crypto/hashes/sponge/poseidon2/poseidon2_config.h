@@ -49,17 +49,17 @@ template <typename F>
 struct Poseidon2Config : public PoseidonConfigBase<F> {
   using PrimeField = math::MaybeUnpack<F>;
 
-  math::Vector<F> internal_diagonal_minus_one;
-  math::Vector<uint8_t> internal_shifts;
+  std::vector<F> internal_diagonal_minus_one;
+  std::vector<uint8_t> internal_shifts;
   bool use_plonky3_internal_matrix = false;
 
   Poseidon2Config() = default;
   Poseidon2Config(const PoseidonConfigBase<F>& base,
-                  const math::Vector<F>& internal_diagonal_minus_one)
+                  const std::vector<F>& internal_diagonal_minus_one)
       : PoseidonConfigBase<F>(base),
         internal_diagonal_minus_one(internal_diagonal_minus_one) {}
   Poseidon2Config(PoseidonConfigBase<F>&& base,
-                  math::Vector<F>&& internal_diagonal_minus_one)
+                  std::vector<F>&& internal_diagonal_minus_one)
       : PoseidonConfigBase<F>(std::move(base)),
         internal_diagonal_minus_one(std::move(internal_diagonal_minus_one)) {}
 
@@ -69,7 +69,7 @@ struct Poseidon2Config : public PoseidonConfigBase<F> {
     Poseidon2ConfigEntry config_entry(N - 1, alpha, full_rounds,
                                       partial_rounds);
     Poseidon2Config ret = config_entry.ToPoseidon2Config<F>();
-    ret.internal_diagonal_minus_one = math::Vector<F>(N);
+    ret.internal_diagonal_minus_one = std::vector<F>(N);
     for (size_t i = 0; i < N; ++i) {
       if constexpr (math::FiniteFieldTraits<F>::kIsPackedPrimeField) {
         ret.internal_diagonal_minus_one[i] =
@@ -89,16 +89,17 @@ struct Poseidon2Config : public PoseidonConfigBase<F> {
     Poseidon2Config ret = config_entry.ToPoseidon2Config<F>();
     ret.use_plonky3_internal_matrix = true;
     if constexpr (math::FiniteFieldTraits<F>::kIsPackedPrimeField) {
-      ret.internal_diagonal_minus_one = math::Vector<F>(N + 1);
-      ret.internal_diagonal_minus_one[0] = F(PrimeField::Config::kModulus - 2);
+      ret.internal_diagonal_minus_one.reserve(N + 1);
+      ret.internal_diagonal_minus_one.push_back(
+          F(PrimeField::Config::kModulus - 2));
       for (size_t i = 1; i < N + 1; ++i) {
-        ret.internal_diagonal_minus_one[i] =
-            F(uint32_t{1} << internal_shifts[i - 1]);
+        ret.internal_diagonal_minus_one.push_back(
+            F(uint32_t{1} << internal_shifts[i - 1]));
       }
     } else {
-      ret.internal_shifts = math::Vector<uint8_t>(N);
+      ret.internal_shifts.reserve(N);
       for (size_t i = 0; i < N; ++i) {
-        ret.internal_shifts[i] = internal_shifts[i];
+        ret.internal_shifts.push_back(internal_shifts[i]);
       }
     }
     FindPoseidon2ARK<F>(config_entry.ToPoseidonGrainLFSRConfig<F>(), ret.ark);
@@ -133,7 +134,7 @@ class Copyable<crypto::Poseidon2Config<F>> {
   static bool ReadFrom(const ReadOnlyBuffer& buffer,
                        crypto::Poseidon2Config<F>* config) {
     crypto::PoseidonConfigBase<F> base;
-    math::Matrix<F> internal_diagonal_minus_one;
+    std::vector<F> internal_diagonal_minus_one;
     if (!buffer.ReadMany(&base, &internal_diagonal_minus_one)) {
       return false;
     }

@@ -65,7 +65,7 @@ class SparseMDSMatrix {
     return !operator==(other);
   }
 
-  void Apply(math::Vector<F>& v) const {
+  void Apply(std::vector<F>& v) const {
     F v_0 = F::Zero();
     for (Eigen::Index i = 0; i < v.size(); ++i) {
       v_0 += row_[i] * v[i];

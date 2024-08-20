@@ -18,7 +18,7 @@ class Poseidon2ExternalMatrix {
  public:
   using Field = typename Poseidon2ExternalMatrixTraits<Derived>::Field;
 
-  static void Apply(math::Vector<Field>& v) {
+  static void Apply(std::vector<Field>& v) {
     size_t size = v.size();
     DCHECK_GT(size, size_t{1});
     DCHECK_LE(size, size_t{24});
@@ -38,13 +38,12 @@ class Poseidon2ExternalMatrix {
     DCHECK_EQ(size % 4, size_t{0}) << "Not a multiple of 4";
 
     if (size == 4) {
-      Derived::DoApply(v);
+      Derived::DoApply(absl::MakeSpan(v));
       return;
     }
 
     for (size_t i = 0; i < size; i += 4) {
-      Eigen::Block<math::Vector<Field>> block = v.block(i, 0, 4, 1);
-      Derived::DoApply(block);
+      Derived::DoApply(absl::MakeSpan(v).subspan(i, 4));
     }
 
     std::array<Field, 4> v_tmp = {Field::Zero(), Field::Zero(), Field::Zero(),

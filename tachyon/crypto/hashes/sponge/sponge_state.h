@@ -21,7 +21,9 @@ namespace crypto {
 template <typename F>
 struct SpongeState {
   // Current sponge's state (current elements in the permutation block)
-  math::Vector<F> elements;
+  // made vector instead of array cuz u can't determine size from default? can
+  // you add a template parameter?
+  std::vector<F> elements;
 
   // Current mode (whether its absorbing or squeezing)
   DuplexSpongeMode mode = DuplexSpongeMode::Absorbing();
@@ -29,10 +31,8 @@ struct SpongeState {
   SpongeState() = default;
   explicit SpongeState(const SpongeConfig& config)
       : SpongeState(config.rate + config.capacity) {}
-  explicit SpongeState(size_t size) : elements(size) {
-    for (size_t i = 0; i < size; ++i) {
-      elements[i] = F::Zero();
-    }
+  explicit SpongeState(size_t size) {
+    elements = std::vector<F>(size, F::Zero());
   }
 
   size_t size() const { return elements.size(); }
@@ -65,7 +65,7 @@ class Copyable<crypto::SpongeState<F>> {
 
   static bool ReadFrom(const ReadOnlyBuffer& buffer,
                        crypto::SpongeState<F>* state) {
-    math::Vector<F> elements;
+    std::vector<F> elements;
     crypto::DuplexSpongeMode mode;
     if (!buffer.ReadMany(&elements, &mode)) {
       return false;

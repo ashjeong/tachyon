@@ -15,8 +15,8 @@ namespace tachyon::crypto {
 template <typename F>
 class Poseidon2HorizenInternalMatrix {
  public:
-  static void Apply(math::Vector<F>& v,
-                    const math::Vector<F>& diagonal_minus_one) {
+  static void Apply(std::vector<F>& v,
+                    const std::vector<F>& diagonal_minus_one) {
     // +-----+-----+-----+-----+   +-----+-----+-----+-----+
     // |  v₀ |  v₁ | ... | vₙ₋₁| * |  μ₀ |  1  | ... |  1  |
     // +-----+-----+-----+-----+   +-----+-----+-----+-----+
@@ -32,7 +32,7 @@ class Poseidon2HorizenInternalMatrix {
     F sum =
         std::accumulate(v.begin(), v.end(), F::Zero(),
                         [](F& acc, const F& value) { return acc += value; });
-    for (Eigen::Index i = 0; i < v.size(); ++i) {
+    for (size_t i = 0; i < v.size(); ++i) {
       v[i] *= diagonal_minus_one[i];
       v[i] += sum;
     }

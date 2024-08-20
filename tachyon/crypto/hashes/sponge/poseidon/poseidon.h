@@ -54,7 +54,7 @@ struct PoseidonSponge final : public PoseidonSpongeBase<PoseidonSponge<F>> {
     }
     this->ApplySBoxFull(state);
     this->ApplyARKFull(state, full_rounds_over_2);
-    ApplyMixEfficientFull(state, full_rounds_over_2);
+    ApplyMixEfficientFull(state);
 
     for (size_t i = full_rounds_over_2 + 1;
          i < full_rounds_over_2 + config.partial_rounds + 1; ++i) {
@@ -82,12 +82,12 @@ struct PoseidonSponge final : public PoseidonSpongeBase<PoseidonSponge<F>> {
 
  private:
   void ApplyMixFull(SpongeState<F>& state) const {
-    state.elements = math::MulMatVecSerial(config.mds, state.elements);
+    state.elements = math::MulMatTrueVecSerial(config.mds, state.elements);
   }
 
-  void ApplyMixEfficientFull(SpongeState<F>& state, Eigen::Index index) const {
+  void ApplyMixEfficientFull(SpongeState<F>& state) const {
     state.elements =
-        math::MulMatVecSerial(config.pre_sparse_mds, state.elements);
+        math::MulMatTrueVecSerial(config.pre_sparse_mds, state.elements);
   }
 
   void ApplyMixEfficientPartial(SpongeState<F>& state,
