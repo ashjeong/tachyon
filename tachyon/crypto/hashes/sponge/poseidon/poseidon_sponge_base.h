@@ -159,20 +159,16 @@ struct PoseidonSpongeBase : public FieldBasedCryptographicSponge<Derived> {
   }
 
   void ApplySBoxFull(SpongeState<Params>& state) const {
-    const Derived& derived = static_cast<const Derived&>(*this);
-    auto& config = derived.config;
     // Full rounds apply the S-Box (xᵅ) to every element of |state|.
     for (F& elem : state.elements) {
-      elem = elem.Pow(config.alpha);
+      elem = elem.template ConstPow<Params::Alpha>();
     }
   }
 
   void ApplySBoxPartial(SpongeState<Params>& state) const {
-    const Derived& derived = static_cast<const Derived&>(*this);
-    auto& config = derived.config;
     // Partial rounds apply the S-Box (xᵅ) to just the first element of
     // |state|.
-    state[0] = state[0].Pow(config.alpha);
+    state[0] = state[0].template ConstPow<Params::Alpha>();
   }
 
  private:

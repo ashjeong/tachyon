@@ -179,6 +179,37 @@ class MultiplicativeSemigroup {
     }
   }
 
+  template <uint64_t Power>
+  [[nodiscard]] constexpr auto ConstPow() const {
+    if constexpr (Power == 0)
+      return MulResult::One();
+    else if constexpr (Power == 1)
+      return static_cast<const G&>(*this);
+    else if constexpr (Power == 2)
+      return Square();
+    else if constexpr (Power == 3)
+      return Square() * static_cast<const G&>(*this);
+    else if constexpr (Power == 4)
+      return Square().Square();
+    else if constexpr (Power == 5) {
+      MulResult g4 = Square();
+      g4.SquareInPlace();
+      return g4 * static_cast<const G&>(*this);
+    } else if constexpr (Power == 6) {
+      MulResult g2 = Square();
+      MulResult g4 = g2;
+      g4.SquareInPlace();
+      return g4 * g2;
+    } else if constexpr (Power == 7) {
+      MulResult g2 = Square();
+      MulResult g4 = g2;
+      g4.SquareInPlace();
+      return g4 * g2 * static_cast<const G&>(*this);
+    } else {
+      return DoPow(BigInt<1>(Power));
+    }
+  }
+
   // Computes the power of a base element using a pre-computed table of powers
   // of two, instead of performing repeated multiplications.
   template <size_t N>
