@@ -88,7 +88,7 @@ class MultiField32Challenger final
     }
   }
 
-  SpongeState<Params> state_{Params::Width};
+  SpongeState<Params> state_;
   absl::InlinedVector<SmallF, R> input_buffer_;
   absl::InlinedVector<SmallF, Params::Width * kNumFElements> output_buffer_;
   Permutation permutation_;

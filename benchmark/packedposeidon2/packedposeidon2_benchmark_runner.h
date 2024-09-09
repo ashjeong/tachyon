@@ -1,0 +1,76 @@
+#ifndef BENCHMARK_PACKEDPOSEIDON2_PACKEDPOSEIDON2_BENCHMARK_RUNNER_H_
+#define BENCHMARK_PACKEDPOSEIDON2_PACKEDPOSEIDON2_BENCHMARK_RUNNER_H_
+
+#include <stddef.h>
+#include <stdint.h>
+
+#include <memory>
+#include <utility>
+
+// clang-format off
+#include "benchmark/simple_reporter.h"
+#include "benchmark/packedposeidon2/packedposeidon2_config.h"
+// clang-format on
+#include "tachyon/base/containers/container_util.h"
+#include "tachyon/base/logging.h"
+#include "tachyon/base/time/time.h"
+#include "tachyon/c/base/type_traits_forward.h"
+#include "tachyon/crypto/hashes/sponge/poseidon2/poseidon2.h"
+#include "tachyon/crypto/hashes/sponge/poseidon2/poseidon2_horizen_external_matrix.h"
+
+namespace tachyon::benchmark {
+
+template <typename PackedF>
+class Poseidon2BenchmarkRunner {
+ public:
+  using Field = math::MaybeUnpack<PackedF>;
+  using CPrimeField = typename c::base::TypeTraits<Field>::CType;
+
+  typedef CPrimeField* (*PoseidonExternalFn)(uint64_t* duration);
+
+  Poseidon2BenchmarkRunner(SimpleReporter& reporter,
+                           const PackedPoseidon2Config& config)
+      : reporter_(reporter), config_(config) {}
+
+  template <typename Params>
+  PackedF Run(const crypto::Poseidon2Config<Params>& config) {
+    reporter_.AddVendor(Vendor::Tachyon());
+    PackedF ret = PackedF::Zero();
+    for (size_t i = 0; i < config_.repeating_num(); ++i) {
+      crypto::Poseidon2Sponge<
+          crypto::Poseidon2ExternalMatrix<
+              crypto::Poseidon2HorizenExternalMatrix<PackedF>>,
+          Params>
+          sponge(std::move(config));
+      crypto::SpongeState<Params> state;
+      base::TimeTicks start = base::TimeTicks::Now();
+      for (size_t j = 0; j < 10000; ++j) {
+        sponge.Permute(state);
+      }
+      reporter_.AddTime(Vendor::Tachyon(), base::TimeTicks::Now() - start);
+      if (i == 0) {
+        ret = state.elements[1];
+      }
+    }
+    return ret;
+  }
+
+  // PackedF RunExternal(Vendor vendor, PoseidonExternalFn fn) {
+  //   reporter_.AddVendor(vendor);
+  //   std::unique_ptr<CPrimeField> ret;
+  //   for (size_t i = 0; i < config_.repeating_num(); ++i) {
+  //     uint64_t duration_in_us;
+  //     ret.reset(fn(&duration_in_us));
+  //     reporter_.AddTime(vendor, base::Microseconds(duration_in_us));
+  //   }
+  //   return *c::base::native_cast(ret.get());
+  // }
+
+ private:
+  SimpleReporter& reporter_;
+  const PackedPoseidon2Config& config_;
+};
+
+}  // namespace tachyon::benchmark
+
+#endif  // BENCHMARK_PACKEDPOSEIDON2_PACKEDPOSEIDON2_BENCHMARK_RUNNER_H_

@@ -64,7 +64,7 @@ class DuplexChallenger final
     }
   }
 
-  SpongeState<Params> state_{Params::Width};
+  SpongeState<Params> state_;
   absl::InlinedVector<F, R> input_buffer_;
   absl::InlinedVector<F, Params::Width> output_buffer_;
   Permutation permutation_;

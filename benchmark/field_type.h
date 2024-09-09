@@ -18,10 +18,14 @@ class FieldType {
     // clang-format off
     kBabyBear  = 1 << 1,
     kBn254Fr   = 1 << 2,
+    kPackedBabyBear   = 1 << 3,
     // clang-format on
   };
 
   constexpr static FieldType BabyBear() { return FieldType(kBabyBear); }
+  constexpr static FieldType PackedBabyBear() {
+    return FieldType(kPackedBabyBear);
+  }
   constexpr static FieldType Bn254Fr() { return FieldType(kBn254Fr); }
 
   FieldType() = default;
@@ -36,6 +40,8 @@ class FieldType {
         return "baby_bear";
       case FieldType::kBn254Fr:
         return "bn254_fr";
+      case FieldType::kPackedBabyBear:
+        return "packed_baby_bear";
     }
     NOTREACHED();
     return "";
@@ -62,6 +68,8 @@ class FlagValueTraits<benchmark::FieldType> {
       *value = FieldType::BabyBear();
     } else if (input == "bn254_fr") {
       *value = FieldType::Bn254Fr();
+    } else if (input == "packed_baby_bear") {
+      *value = FieldType::PackedBabyBear();
     } else {
       *reason = absl::Substitute("Unknown prime field: $0", input);
       return false;

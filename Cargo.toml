@@ -11,6 +11,7 @@ members = [
     "benchmark/poseidon/arkworks",
     "benchmark/poseidon2/horizen",
     "benchmark/poseidon2/plonky3",
+    "benchmark/packedposeidon2/plonky3",
     "tachyon/rs",
     "vendors/scroll_halo2",
     "vendors/plonky3",

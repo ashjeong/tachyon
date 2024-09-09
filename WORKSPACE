@@ -62,6 +62,7 @@ crates_repository(
         "//benchmark/poseidon/arkworks:Cargo.toml",
         "//benchmark/poseidon2/horizen:Cargo.toml",
         "//benchmark/poseidon2/plonky3:Cargo.toml",
+        "//benchmark/packedposeidon2/plonky3:Cargo.toml",
         "//tachyon/rs:Cargo.toml",
         "//vendors/plonky3:Cargo.toml",
         "//vendors/scroll_halo2:Cargo.toml",
