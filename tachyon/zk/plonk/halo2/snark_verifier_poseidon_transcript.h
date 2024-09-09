@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "tachyon/crypto/hashes/sponge/poseidon/poseidon.h"
+#include "tachyon/crypto/hashes/sponge/poseidon/poseidon_params.h"
 #include "tachyon/crypto/transcripts/transcript.h"
 #include "tachyon/zk/plonk/halo2/prime_field_conversion.h"
 #include "tachyon/zk/plonk/halo2/proof_serializer.h"
@@ -23,13 +24,14 @@ class SnarkVerifierPoseidonBase {
   using ScalarField = typename AffinePoint::ScalarField;
   using Curve = typename AffinePoint::Curve;
   using CurveConfig = typename Curve::Config;
+  using Params = crypto::BN254PoseidonParams5;
 
   SnarkVerifierPoseidonBase()
       : poseidon_(
             // See
             // https://github.com/scroll-tech/snark-verifier/blob/58c46b7/snark-verifier-sdk/src/param.rs#L7-L10.
-            crypto::PoseidonConfig<ScalarField>::CreateCustom(4, 5, 8, 60, 0)),
-        state_(poseidon_.config) {
+            crypto::PoseidonConfig<Params>::CreateCustom(0)),
+        state_(crypto::SpongeState<Params>()) {
     // See
     // https://github.com/scroll-tech/snark-verifier/blob/58c46b7/snark-verifier/src/util/hash/poseidon.rs#L28-L31.
     state_.elements[0] = FromUint128<ScalarField>(absl::uint128(1) << 64);
@@ -55,7 +57,7 @@ class SnarkVerifierPoseidonBase {
   }
 
   ScalarField DoSqueeze() {
-    size_t rate = poseidon_.config.rate;
+    size_t rate = poseidon_.config.Rate;
     size_t num_chunks = (buf_.size() + rate - 1) / rate;
 
     for (size_t i = 0; i < num_chunks; ++i) {
@@ -108,9 +110,9 @@ class SnarkVerifierPoseidonBase {
     CHECK(buffer.Done());
   }
 
-  crypto::PoseidonSponge<ScalarField> poseidon_;
+  crypto::PoseidonSponge<Params> poseidon_;
   std::vector<ScalarField> buf_;
-  crypto::SpongeState<ScalarField> state_;
+  crypto::SpongeState<Params> state_;
 
  private:
   // See

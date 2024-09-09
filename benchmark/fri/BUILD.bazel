@@ -52,6 +52,7 @@ tachyon_cc_binary(
         "//tachyon/crypto/hashes/sponge:truncated_permutation",
         "//tachyon/crypto/hashes/sponge/poseidon2",
         "//tachyon/crypto/hashes/sponge/poseidon2:poseidon2_horizen_external_matrix",
+        "//tachyon/crypto/hashes/sponge/poseidon2:poseidon2_params",
         "//tachyon/math/finite_fields:packed_field_traits_forward",
         "//tachyon/math/finite_fields/baby_bear:baby_bear4",
         "//tachyon/math/finite_fields/baby_bear:packed_baby_bear4",

@@ -9,6 +9,7 @@
 #include "tachyon/base/profiler.h"
 #include "tachyon/c/math/elliptic_curves/bn/bn254/fr.h"
 #include "tachyon/c/math/elliptic_curves/bn/bn254/fr_type_traits.h"
+#include "tachyon/crypto/hashes/sponge/poseidon/poseidon_params.h"
 #include "tachyon/math/elliptic_curves/bn/bn254/fr.h"
 
 namespace tachyon::benchmark {
@@ -33,7 +34,8 @@ int RealMain(int argc, char** argv) {
 
   Field::Init();
   SimpleReporter reporter;
-  PoseidonBenchmarkRunner<Field> runner(reporter, config);
+  PoseidonBenchmarkRunner<Field, crypto::BN254PoseidonParams9> runner(reporter,
+                                                                      config);
 
   reporter.set_title("Poseidon Benchmark");
   reporter.set_x_label("Trial number");

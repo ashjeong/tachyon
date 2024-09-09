@@ -66,6 +66,12 @@ tachyon_cc_library(
 )
 
 tachyon_cc_library(
+    name = "poseidon_params",
+    hdrs = ["poseidon_params.h"],
+    deps = ["//tachyon/math/finite_fields/baby_bear/internal:baby_bear"],
+)
+
+tachyon_cc_library(
     name = "poseidon_sponge_base",
     hdrs = ["poseidon_sponge_base.h"],
     deps = [
@@ -99,6 +105,7 @@ tachyon_cc_unittest(
     deps = [
         ":poseidon",
         ":poseidon_config",
+        ":poseidon_params",
         ":sparse_mds_matrix",
         "//tachyon/base/buffer:vector_buffer",
         "//tachyon/math/elliptic_curves/bls12/bls12_381:fr",

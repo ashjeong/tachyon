@@ -6,57 +6,18 @@
 #include "tachyon/base/buffer/copyable.h"
 #include "tachyon/export.h"
 
-namespace tachyon {
-namespace crypto {
+namespace tachyon::crypto {
 
+template <size_t _Rate, size_t _Capacity>
 struct TACHYON_EXPORT SpongeConfig {
   // The rate (in terms of number of field elements).
   // See https://iacr.org/archive/eurocrypt2008/49650180/49650180.pdf
-  size_t rate = 0;
+  constexpr static size_t Rate = _Rate;
 
   // The capacity (in terms of number of field elements).
-  size_t capacity = 0;
-
-  SpongeConfig() = default;
-  SpongeConfig(size_t rate, size_t capacity) : rate(rate), capacity(capacity) {}
-
-  bool operator==(const SpongeConfig& other) const {
-    return rate == other.rate && capacity == other.capacity;
-  }
-  bool operator!=(const SpongeConfig& other) const {
-    return !operator==(other);
-  }
+  constexpr static size_t Capacity = _Capacity;
 };
 
-}  // namespace crypto
-
-namespace base {
-
-template <>
-class Copyable<crypto::SpongeConfig> {
- public:
-  static bool WriteTo(const crypto::SpongeConfig& config, Buffer* buffer) {
-    return buffer->WriteMany(config.rate, config.capacity);
-  }
-
-  static bool ReadFrom(const ReadOnlyBuffer& buffer,
-                       crypto::SpongeConfig* config) {
-    size_t rate;
-    size_t capacity;
-    if (!buffer.ReadMany(&rate, &capacity)) {
-      return false;
-    }
-
-    *config = {rate, capacity};
-    return true;
-  }
-
-  static size_t EstimateSize(const crypto::SpongeConfig& config) {
-    return base::EstimateSize(config.rate, config.capacity);
-  }
-};
-
-}  // namespace base
-}  // namespace tachyon
+}  // namespace tachyon::crypto
 
 #endif  // TACHYON_CRYPTO_HASHES_SPONGE_SPONGE_CONFIG_H_
