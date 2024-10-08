@@ -331,23 +331,27 @@ class TwoAdicFRI {
     TRACE_EVENT("Utils", "ComputeInverseDenominators");
     size_t num_rounds = matrices_by_round.size();
 
+    // finds the max log_num_rows across a round's matrices, and map all points
+    // to
     absl::flat_hash_map<ExtF, uint32_t> max_log_num_rows_for_point;
     uint32_t max_log_num_rows = 0;
     for (size_t round = 0; round < num_rounds; ++round) {
       absl::Span<const Eigen::Map<const math::RowMajorMatrix<F>>> matrices =
           matrices_by_round[round];
       const OpeningPointsForRound& points = points_by_round[round];
-      for (const Eigen::Map<const math::RowMajorMatrix<F>>& matrix : matrices) {
+      for (size_t matrix_idx = 0; matrix_idx < matrices.size(); ++matrix_idx) {
+        const Eigen::Map<const math::RowMajorMatrix<F>>& mat =
+            matrices[matrix_idx];
+        const std::vector<ExtF>& points_for_mat = points[matrix_idx];
+
         uint32_t log_num_rows =
-            base::bits::CheckedLog2(static_cast<uint32_t>(matrix.rows()));
+            base::bits::CheckedLog2(static_cast<uint32_t>(mat.rows()));
         max_log_num_rows = std::max(max_log_num_rows, log_num_rows);
-        for (const std::vector<ExtF>& point_list : points) {
-          for (const ExtF& point : point_list) {
-            const auto [it, inserted] =
-                max_log_num_rows_for_point.try_emplace(point, log_num_rows);
-            if (!inserted) {
-              it->second = std::max(it->second, log_num_rows);
-            }
+        for (const ExtF& point : points_for_mat) {
+          const auto [it, inserted] =
+              max_log_num_rows_for_point.try_emplace(point, log_num_rows);
+          if (!inserted) {
+            it->second = std::max(it->second, log_num_rows);
           }
         }
       }
@@ -383,9 +387,12 @@ class TwoAdicFRI {
 
   // Slight variation of this approach:
   // https://hackmd.io/@vbuterin/barycentric_evaluation
+  // As explained by the name, this function gets a polynomial's evaluations on
+  // a coset(|coset_evals|) and evaluates the polynomial on a given |point| on
+  // the same coset using a given |shift|
   template <typename Derived>
   static std::vector<ExtF> InterpolateCoset(
-      const Eigen::MatrixBase<Derived>& coset_evals, F shift,
+      const Eigen::MatrixBase<Derived>& coset_evals, const F shift,
       const ExtF& point) {
     TRACE_EVENT("Utils", "InterpolateCoset");
     size_t num_rows = static_cast<size_t>(coset_evals.rows());
